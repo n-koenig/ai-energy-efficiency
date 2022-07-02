@@ -1,5 +1,12 @@
 # ai-energy-efficiency
 
+## next steps:
+- compute energy from raw data
+- collect and compute average accuracy and energy
+- further compute standard deviaton and what not for accuracy and energy
+- look into pytorch lightning/benchmarking
+- look into wisemat model
+
 ## conda
 - conda install -n <name> <package>
 - conda remove -n <name> <package>
