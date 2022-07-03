@@ -20,7 +20,7 @@ from keras import backend as K
 
 batch_size = 128
 num_classes = 10
-epochs = 12
+epochs = 3
 
 # input image dimensions
 img_rows, img_cols = 28, 28
@@ -63,7 +63,7 @@ model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
-csv_logger = CSVLogger('log_keras.csv', separator=',')
+csv_logger = CSVLogger('log_keras.csv', separator=',', append=True)
 model.fit(x_train, y_train,
           batch_size=batch_size,
           epochs=epochs,

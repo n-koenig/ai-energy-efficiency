@@ -13,7 +13,7 @@ from torch.autograd import Variable
 
 batch_size = 128
 num_classes = 10
-epochs = 12
+epochs = 3
 
 # download and transform train dataset
 train_loader = torch.utils.data.DataLoader(datasets.MNIST('./mnist_data', 
@@ -121,8 +121,8 @@ def train(epoch):
         loss_history.append(loss.item())
         opt.step()
         
-        if batch_id % 100 == 0:
-            print(loss.item())
+        # if batch_id % 100 == 0:
+        #     print(loss.item())
 
     return loss.item()
 
@@ -137,7 +137,6 @@ def test(epoch):
             target = Variable(target).to(device)
             
             output = clf(data)
-            print(F.nll_loss(output, target))
             test_loss += F.nll_loss(output, target).item()
             
             pred = output.data.max(1)[1] # get the index of the max log-probability
@@ -147,17 +146,17 @@ def test(epoch):
         test_loss /= len(test_loader) # loss function already averages over batch size
         accuracy = 100. * correct / len(test_loader.dataset)
         acc_history.append(accuracy)
-        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            test_loss, correct, len(test_loader.dataset),
-            accuracy))
+        # print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        #     test_loss, correct, len(test_loader.dataset),
+        #     accuracy))
 
     return accuracy, test_loss
 
-with open('log_pytorch.csv', 'w') as f:
-    f.write("epoch,loss,test_accuracy,test_loss\n")
+# with open("log_pytorch", 'a') as f:
+#     f.write("epoch,accuracy,loss,val_accuracy,val_loss\n")
 
 for epoch in range(epochs):
     loss = train(epoch)
     test_accuracy, test_loss = test(epoch)
     with open('log_pytorch.csv', 'a') as f:
-        f.write("{},{},{},{}\n".format(epoch, loss, test_accuracy, test_loss))
+        f.write("{},0,{},{},{}\n".format(epoch, loss, test_accuracy, test_loss))
