@@ -7,7 +7,7 @@ titles = titles.tolist().split(',')
 
 arr = []
 for i in range(10):
-    arr.append(np.genfromtxt(f"power_levels_pytorch_{i}.txt", skip_header=1, delimiter=','))
+    arr.append(np.genfromtxt(f"power_levels_keras_{i}.txt", skip_header=1, delimiter=','))
     # arr2 = np.genfromtxt("power_levels_1.txt", skip_header=1, delimiter=',')
 
 

@@ -23,6 +23,7 @@
 
 ## notes
 - make log files that are opened inside python scripts 666 (r+w for everyone)
+- two consecutive GPU watt values are always exactly the same, probably can not be sampled that often
 
 ## execution
 - conda activate tf; python3 tensorflow_mnist.py
