@@ -16,3 +16,7 @@
 - keras better (linear) efficiency
 
 - measurements after PC restart, no programs opened, no specific power settings used
+
+
+### 1 
+- started measurements right after PC startup, resulting in the first run being delayed
