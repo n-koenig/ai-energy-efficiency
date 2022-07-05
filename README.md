@@ -11,11 +11,6 @@
 - look into pytorch lightning/benchmarking
 - look into wisemat model
 
-## for getemed presentation:
-- mnist models with keras/pytorch, 12 epochs*20 runs
-- plot average energy for each device+start/stop lines + standard deviation range
-- plot avg energy vs avg accuracy for each
-
 
 ## conda
 - conda install -n <name> <package>
@@ -38,3 +33,6 @@
 ## execution
 - conda activate tf; python3 tensorflow_mnist.py
 - conda activate pytorch; python3 pytorch_mnist.py
+
+
+- currently paths not working for accuracy logs yet
