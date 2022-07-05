@@ -2,57 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import integrate
 
-titles = np.loadtxt("power_levels_pytorch_0.txt", dtype=str, max_rows=1)
+reps = 10
+
+titles = np.loadtxt("first_experiments/power_levels_pytorch_0.txt", dtype=str, max_rows=1)
 titles = titles.tolist().split(',')
 
 arr = []
-for i in range(10):
-    arr.append(np.genfromtxt(f"power_levels_keras_{i}.txt", skip_header=1, delimiter=','))
+for i in range(reps):
+    arr.append(np.genfromtxt(f"first_experiments/power_levels_pytorch_{i}.txt", skip_header=1, delimiter=','))
     # arr2 = np.genfromtxt("power_levels_1.txt", skip_header=1, delimiter=',')
 
-
-# print(arr)
-arr1 = arr[0]
-arr2 = arr[4]
-arr3 = arr[9]
-
-# arr = np.genfromtxt("watt4.txt", delimiter=',', filling_values=0)
-
-# print(arr)
-# # print(np.where(arr==0)[0][0])
-# # accuracy = arr[np.where(arr==0)[0][0]][0]
-# # print(accuracy)
-# mid = np.where(arr==0)[0][7]
-# print(mid)
-# arr1 = arr[:mid, :]
-# arr2 = arr[mid:, :]
-# print(arr1)
-# print(arr2)
-
-# arr1 = np.delete(arr1, np.where(arr1==0)[0], 0)
-# arr2 = np.delete(arr2, np.where(arr2==0)[0], 0)
-
-# arr = np.delete(arr, np.where(arr==0)[0], 0)
-
-
-# print(arr[:, 0])
-
-# print(arr)
-
-
-# plt.figure(1)
-# plt.plot(arr)
-# # plt.figure(2)
-# fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
-# axs[0, 0].plot(arr[:, 0])
-# axs[0, 0].set_title(titles[0])
-# axs[0, 1].plot(arr[:, 1])
-# axs[0, 1].set_title(titles[1])
-# axs[1, 0].plot(arr[:, 2])
-# axs[1, 0].set_title(titles[2])
-# axs[1, 1].plot(arr[:, 3])
-# axs[1, 1].set_title(titles[3])
-
+print(len(arr))
 
 # plt.figure(1)
 # plt.plot(np.concatenate((arr1, arr2)))
@@ -60,41 +20,106 @@ arr3 = arr[9]
 # plt.plot(arr2, label="Run 2")
 # plt.legend()
 
-
-back = min(len(arr3), len(arr2), len(arr1))-160
-# plt.figure(2)
 fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
-axs[0, 0].plot(arr1[:, 0], label="Run 1")
-axs[0, 0].plot(arr2[:, 0], label="Run 2")
-axs[0, 0].plot(arr3[:, 0], label="Run 3")
-axs[0, 0].axvline(x=160)
-axs[0, 0].axvline(x=back)
+for i in range(1, reps):
+    print(i)
+    axs[0, 0].plot(arr[i][:, 0], label=f"Run {i}")
+    axs[0, 0].set_title(titles[0])
+    axs[0, 0].legend()
+
+    axs[0, 1].plot(arr[i][:, 1], label=f"Run {i}")
+    axs[0, 1].set_title(titles[1])
+    axs[0, 1].legend()
+
+    axs[1, 0].plot(arr[i][:, 2], label=f"Run {i}")
+    axs[1, 0].set_title(titles[2])
+    axs[1, 0].legend()
+
+    axs[1, 1].plot(arr[i][:, 3], label=f"Run {i}")
+    axs[1, 1].set_title(titles[3])
+    axs[1, 1].legend()
+
+
+
+
+arr = np.asarray(arr)
+
+arr0 = []
+arr1 = []
+arr2 = []
+arr3 = []
+for i in range(1, reps):
+    arr0.append(arr[i][:, 0])
+    arr1.append(arr[i][:, 1])
+    arr2.append(arr[i][:, 2])
+    arr3.append(arr[i][:, 3])
+
+def tolerant_mean(arrs):
+    lens = [len(i) for i in arrs]
+    arr = np.ma.empty((np.max(lens),len(arrs)))
+    arr.mask = True
+    for idx, l in enumerate(arrs):
+        arr[:len(l),idx] = l
+    return arr.mean(axis = -1), arr.std(axis=-1)
+
+fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
+fig.suptitle("Simple Pytorch Convolutional NN trained on MNIST dataset, 20 runs average")
+y, error = tolerant_mean(arr0)
+x = np.linspace(0, y.shape[0]-1, y.shape[0])
+axs[0, 0].plot(y)
+axs[0, 0].fill_between(x, y-error, y+error, color='green', alpha=0.2)
 axs[0, 0].set_title(titles[0])
-axs[0, 0].legend()
-
-axs[0, 1].plot(arr1[:, 1], label="Run 1")
-axs[0, 1].plot(arr2[:, 1], label="Run 2")
-axs[0, 1].plot(arr3[:, 1], label="Run 3")
-axs[0, 1].axvline(x=160)
-axs[0, 1].axvline(x=back)
+y, error = tolerant_mean(arr1)
+axs[0, 1].plot(y)
 axs[0, 1].set_title(titles[1])
-axs[0, 1].legend()
-
-axs[1, 0].plot(arr1[:, 2], label="Run 1")
-axs[1, 0].plot(arr2[:, 2], label="Run 2")
-axs[1, 0].plot(arr3[:, 2], label="Run 3")
-axs[1, 0].axvline(x=160)
-axs[1, 0].axvline(x=back)
+axs[0, 1].fill_between(x, y-error, y+error, color='green', alpha=0.2)
+y, error = tolerant_mean(arr2)
+axs[1, 0].plot(y)
+axs[1, 0].fill_between(x, y-error, y+error, color='green', alpha=0.2)
 axs[1, 0].set_title(titles[2])
-axs[1, 0].legend()
-
-axs[1, 1].plot(arr1[:, 3], label="Run 1")
-axs[1, 1].plot(arr2[:, 3], label="Run 2")
-axs[1, 1].plot(arr3[:, 3], label="Run 3")
-axs[1, 1].axvline(x=160)
-axs[1, 1].axvline(x=back)
+y, error = tolerant_mean(arr3)
+axs[1, 1].plot(y)
+axs[1, 1].fill_between(x, y-error, y+error, color='green', alpha=0.2)
 axs[1, 1].set_title(titles[3])
-axs[1, 1].legend()
+
+
+
+
+
+
+# back = min(len(arr3), len(arr2), len(arr1))-160
+# plt.figure(2)
+# axs[0, 0].plot(arr1[:, 0], label="Run 1")
+# axs[0, 0].plot(arr2[:, 0], label="Run 2")
+# axs[0, 0].plot(arr3[:, 0], label="Run 3")
+# axs[0, 0].axvline(x=160)
+# axs[0, 0].axvline(x=back)
+# axs[0, 0].set_title(titles[0])
+# axs[0, 0].legend()
+
+# axs[0, 1].plot(arr1[:, 1], label="Run 1")
+# axs[0, 1].plot(arr2[:, 1], label="Run 2")
+# axs[0, 1].plot(arr3[:, 1], label="Run 3")
+# axs[0, 1].axvline(x=160)
+# axs[0, 1].axvline(x=back)
+# axs[0, 1].set_title(titles[1])
+# axs[0, 1].legend()
+
+# axs[1, 0].plot(arr1[:, 2], label="Run 1")
+# axs[1, 0].plot(arr2[:, 2], label="Run 2")
+# axs[1, 0].plot(arr3[:, 2], label="Run 3")
+# axs[1, 0].axvline(x=160)
+# axs[1, 0].axvline(x=back)
+# axs[1, 0].set_title(titles[2])
+# axs[1, 0].legend()
+
+# axs[1, 1].plot(arr1[:, 3], label="Run 1")
+# axs[1, 1].plot(arr2[:, 3], label="Run 2")
+# axs[1, 1].plot(arr3[:, 3], label="Run 3")
+# axs[1, 1].axvline(x=160)
+# axs[1, 1].axvline(x=back)
+# axs[1, 1].set_title(titles[3])
+# axs[1, 1].legend()
 
 plt.show()
 

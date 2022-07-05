@@ -4,8 +4,18 @@
 - compute energy from raw data
 - collect and compute average accuracy and energy
 - further compute standard deviaton and what not for accuracy and energy
+
+---
+
+- write functions for different calculations/visualizations from raw data
 - look into pytorch lightning/benchmarking
 - look into wisemat model
+
+## for getemed presentation:
+- mnist models with keras/pytorch, 12 epochs*20 runs
+- plot average energy for each device+start/stop lines + standard deviation range
+- plot avg energy vs avg accuracy for each
+
 
 ## conda
 - conda install -n <name> <package>
