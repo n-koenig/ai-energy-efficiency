@@ -3,11 +3,11 @@ import subprocess
 
 experiments = ['keras', 'pytorch']
 workload_envs = [['bash',  '-c', 'source /home/nils/miniconda3/bin/activate tf && python3 '],
-            [' bash -c source /home/nils/miniconda3/bin/activate pytorch && python3 ']]
+            ['bash', '-c', 'source /home/nils/miniconda3/bin/activate pytorch && python3 ']]
 script_paths = ['MNIST_CNN/keras_mnist.py', 'MNIST_CNN/pytorch_mnist.py']
 output_paths = ["dump/", "MNIST_CNN/3/"]
 
-exp_id = 0
+exp_id = 1
 reps = 20
 out_path = output_paths[1]
 exp_name = experiments[exp_id]

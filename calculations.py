@@ -7,6 +7,13 @@ class ExperimentData:
         self.name = name
         self.reps = reps
         self.epochs = epochs
+        self.watts = []
+        self.energy = []
+        self.energy_avg = []
+        self.energy_std = []
+        self.acc_avg = 0
+        self.acc_std = 0
+        self.efficiency = 0
 
     def set_energy_data(self, path, filename):
         self.watts = read_watts(path, filename, self.reps)
@@ -61,18 +68,19 @@ def linear_efficiency(avg_energy, avg_acc):
     return 1000000 * avg_acc / (avg_energy[0] + avg_energy[1] + avg_energy[2])
 
 
-def barplot_energy(energy_arr, reps):
+def barplot_energy(title, energy_arr, reps):
     plt.figure()
+    plt.title(title)
     plt.bar([x*4+0 for x in range(reps)], energy_arr[:, 0])
     plt.bar([x*4+1 for x in range(reps)], energy_arr[:, 1])
     plt.bar([x*4+2 for x in range(reps)], energy_arr[:, 2])
     plt.bar([x*4+3 for x in range(reps)], energy_arr[:, 3])
 
 
-def plot_energy_and_acc(labels, avg_energy_1, avg_error_1, avg_acc_1):
+def plot_energy_and_acc(title, labels, avg_energy_1, avg_error_1, avg_acc_1):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
-    fig.suptitle("Simple Convolutional NN trained on MNIST dataset, 20 runs average")
+    fig.suptitle(title)
     ax1.set_ylabel("Average energy consumptin in Joules")
     ax2.set_ylabel("Average test accuracy in %")
     ax2.set_ylim(0, 1)
@@ -83,10 +91,10 @@ def plot_energy_and_acc(labels, avg_energy_1, avg_error_1, avg_acc_1):
     ax1.legend()
 
 
-def plot_compare_energy_and_acc(labels, avg_energy_1, avg_energy_2, avg_error_1, avg_error_2, avg_acc_1,avg_acc_2):
+def plot_compare_energy_and_acc(title, labels, avg_energy_1, avg_energy_2, avg_error_1, avg_error_2, avg_acc_1,avg_acc_2):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
-    fig.suptitle("Simple Convolutional NN trained on MNIST dataset, 20 runs average")
+    fig.suptitle(title)
     ax1.set_ylabel("Average energy consumptin in Joules")
     ax2.set_ylabel("Average test accuracy in %")
     ax2.set_ylim(0, 1)
@@ -97,14 +105,16 @@ def plot_compare_energy_and_acc(labels, avg_energy_1, avg_energy_2, avg_error_1,
     ax1.legend()
 
 
-def plot_watts(titles, watts, reps):
+def plot_watts(title, titles, watts, reps):
     fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
+    fig.suptitle(title)
+    l = list()
     for j in range(4):
         index = [int(x) for x in f"{j:02b}"]
         for i in range(reps):
-            axs[index[0], index[1]].plot(watts[i][:, j], label=f"Run {i}")
+            l.append(axs[index[0], index[1]].plot(watts[i][:, j]))
             axs[index[0], index[1]].set_title(titles[j])
-            axs[index[0], index[1]].legend()
+    fig.legend(l, labels=[f"Run {i}" for i in range(20)], loc="right")
 
 
 def tolerant_mean(arrs):
@@ -117,45 +127,46 @@ def tolerant_mean(arrs):
     return arr.mean(axis = -1), arr.std(axis=-1)
 
 
-def plot_avg_watts(watts, title):
+def plot_avg_watts(title, watts):
     fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
     fig.suptitle(title)
+    l = list()
     for i in range(4):
         arr = [x[:, i] for x in watts]
         y, error = tolerant_mean(arr)
         x = np.linspace(0, y.shape[0]-1, y.shape[0])
         index = [int(x) for x in f"{i:02b}"]
-        axs[index[0], index[1]].plot(y)
+        l.append(axs[index[0], index[1]].plot(y))
         axs[index[0], index[1]].fill_between(x, y-error, y+error, color='green', alpha=0.2)
         axs[index[0], index[1]].set_title(titles[i])
+    fig.legend(l, labels=['average', 'standard\ndeviation'], loc="right")
         
 
-paths = ['dump/', 'MNIST_CNN/1/']
+paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/3/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 keras_data = ExperimentData('keras', 20, 12)
-keras_data.set_energy_data(paths[1], 'keras')
-keras_data.set_acc_data(paths[1], 'keras')
+keras_data.set_energy_data(paths[2], 'keras')
+keras_data.set_acc_data(paths[2], 'keras')
 keras_data.set_efficiency_data()
 
 pytorch_data = ExperimentData('pytorch', 20, 12)
-pytorch_data.set_energy_data(paths[1], 'pytorch')
-pytorch_data.set_acc_data(paths[1], 'pytorch')
+pytorch_data.set_energy_data(paths[2], 'pytorch')
+pytorch_data.set_acc_data(paths[2], 'pytorch')
 pytorch_data.set_efficiency_data()
 
 keras_data.print_data()
 print("-----------------------------------------------------")
 pytorch_data.print_data()
 
-# barplot_energy(keras_energy, reps)
+# barplot_energy("title", keras_energy, reps)
 labels = [f'keras\n(efficiency: {keras_data.efficiency:.2f})', f'pytorch\n(efficiency: {pytorch_data.efficiency:.2f})']
-# print(keras_acc_avg, pytorch_acc_avg)
-plot_compare_energy_and_acc(labels, keras_data.energy_avg, pytorch_data.energy_avg, keras_data.energy_std, pytorch_data.energy_std, keras_data.acc_avg, pytorch_data.acc_avg)
-plot_energy_and_acc(labels[0], keras_data.energy_avg, keras_data.energy_std, keras_data.acc_avg)
-# plot_watts(titles, keras_watts, reps)
-# plot_watts(titles, pytorch_watts, reps)
-# plot_avg_watts(keras_watts, "Simple Keras Convolutional NN trained on MNIST dataset, 20 runs average")
-# plot_avg_watts(pytorch_watts, "Simple Pytorch Convolutional NN trained on MNIST dataset, 20 runs average")
+plot_compare_energy_and_acc("Simple Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", labels, keras_data.energy_avg, pytorch_data.energy_avg, keras_data.energy_std, pytorch_data.energy_std, keras_data.acc_avg, pytorch_data.acc_avg)
+plot_energy_and_acc("Simple Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", labels[0], keras_data.energy_avg, keras_data.energy_std, keras_data.acc_avg)
+plot_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, keras_data.watts, keras_data.reps)
+plot_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, pytorch_data.watts, pytorch_data.reps)
+plot_avg_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", keras_data.watts)
+plot_avg_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", pytorch_data.watts)
 
 
 plt.show()

@@ -16,7 +16,7 @@ num_classes = 10
 epochs = 12
 
 # download and transform train dataset
-train_loader = torch.utils.data.DataLoader(datasets.MNIST('./mnist_data', 
+train_loader = torch.utils.data.DataLoader(datasets.MNIST('./MNIST_CNN/mnist_data', 
                                                           download=True, 
                                                           train=True,
                                                           transform=transforms.Compose([
@@ -27,7 +27,7 @@ train_loader = torch.utils.data.DataLoader(datasets.MNIST('./mnist_data',
                                            shuffle=True)
 
 # download and transform test dataset
-test_loader = torch.utils.data.DataLoader(datasets.MNIST('./mnist_data', 
+test_loader = torch.utils.data.DataLoader(datasets.MNIST('./MNIST_CNN/mnist_data', 
                                                           download=True, 
                                                           train=False,
                                                           transform=transforms.Compose([
