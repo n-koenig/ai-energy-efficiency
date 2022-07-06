@@ -104,7 +104,7 @@ keras_energy_std = 100 * np.std(keras_energy, axis=0)/keras_energy_avg
 
 # get accuracy
 # keras_accs = np.average(read_accs(path, 'log_keras.csv', reps))
-p# ytorch_accs = np.average(read_accs(path, 'log_pytorch.csv', reps))
+# ytorch_accs = np.average(read_accs(path, 'log_pytorch.csv', reps))
 
 # get avg and std for energy
 # keras_acc_avg = 100*np.average(keras_accs)
