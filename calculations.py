@@ -12,7 +12,7 @@ def read_watts(path, file_name, reps):
 def read_accs(path, file_name, reps):
     accs = []
     for i in range(reps):
-        accs.append(np.genfromtxt(path + file_name, skip_header=1, delimiter=',')[i*3+2])
+        accs.append(np.genfromtxt(path + file_name, skip_header=1, delimiter=',')[i*12+11])
     accs = np.asarray(accs)[:, 3]
     
     return accs
@@ -39,6 +39,20 @@ def barplot_energy(energy_arr, reps):
 
 
 def plot_energy_and_acc(labels, avg_energy_1, avg_energy_2, avg_error_1, avg_error_2, avg_acc_1,avg_acc_2):
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    fig.suptitle("Simple Convolutional NN trained on MNIST dataset, 20 runs average")
+    ax1.set_ylabel("Average energy consumptin in Joules")
+    ax2.set_ylabel("Average test accuracy in %")
+    ax2.set_ylim(0, 1)
+    ax1.bar(labels, [avg_energy_1[0]], yerr=[avg_error_1[0]], label="GPU")
+    ax1.bar(labels, [avg_energy_1[1]], yerr=[avg_error_1[1]], bottom=[avg_energy_1[0]], label="RAM")
+    ax1.bar(labels, [avg_energy_1[2]], yerr=[avg_error_1[2]], bottom=[avg_energy_1[0]+avg_energy_1[1]], label="CPU")
+    ax2.plot([avg_acc_1/100], 'ro')
+    ax1.legend()
+
+
+def plot_compare_energy_and_acc(labels, avg_energy_1, avg_energy_2, avg_error_1, avg_error_2, avg_acc_1,avg_acc_2):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     fig.suptitle("Simple Convolutional NN trained on MNIST dataset, 20 runs average")
@@ -91,44 +105,45 @@ path = paths[0]
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 # get energy
-keras_watts = read_watts(path, 'keras', reps)
-#pytorch_watts = read_watts(path, 'pytorch', reps)
+keras_watts = read_watts(paths[0], 'keras', reps)
+pytorch_watts = read_watts(paths[1], 'pytorch', reps)
 keras_energy = energy_from_watts(keras_watts)
-# pytorch_energy = energy_from_watts(pytorch_watts)
+pytorch_energy = energy_from_watts(pytorch_watts)
 
 # compute avg and std for energy
 keras_energy_avg = np.average(keras_energy, axis=0)
 keras_energy_std = 100 * np.std(keras_energy, axis=0)/keras_energy_avg
-# pytorch_energy_avg = np.average(pytorch_energy, axis=0)
-# pytorch_energy_std = 100 * np.std(pytorch_energy, axis=0)/pytorch_energy_avg
+pytorch_energy_avg = np.average(pytorch_energy, axis=0)
+pytorch_energy_std = 100 * np.std(pytorch_energy, axis=0)/pytorch_energy_avg
 
 # get accuracy
-# keras_accs = np.average(read_accs(path, 'log_keras.csv', reps))
-# ytorch_accs = np.average(read_accs(path, 'log_pytorch.csv', reps))
+keras_accs = read_accs(paths[0], 'log_keras.csv', reps)
+pytorch_accs = read_accs(paths[1], 'log_pytorch.csv', reps)
+print(keras_accs)
 
 # get avg and std for energy
-# keras_acc_avg = 100*np.average(keras_accs)
-# keras_acc_std = 100*np.std(keras_accs)
-# pytorch_acc_avg = np.average(pytorch_accs)
-# pytorch_acc_std = np.std(pytorch_accs)
+keras_acc_avg = 100*np.average(keras_accs)
+keras_acc_std = 100*np.std(keras_accs)
+pytorch_acc_avg = np.average(pytorch_accs)
+pytorch_acc_std = np.std(pytorch_accs)
 
 # calculate linear efficiency
-# keras_efficiency = linear_efficiency(keras_energy_avg, keras_acc_avg)
-# pytorch_efficiency = linear_efficiency(pytorch_energy_avg, pytorch_acc_avg)
+keras_efficiency = linear_efficiency(keras_energy_avg, keras_acc_avg)
+pytorch_efficiency = linear_efficiency(pytorch_energy_avg, pytorch_acc_avg)
 
 # print calculation results 
-# print(', '.join(f'avg: {x:,.2f}' for x in keras_energy_avg))
-# print(', '.join(f'std: {x:.2f}%' for x in keras_energy_std))
-# print(', '.join(f'avg: {x:,.2f}' for x in pytorch_energy_avg))
-# print(', '.join(f'std: {x:.2f}%' for x in pytorch_energy_std))
-# print(f"{keras_acc_avg:.2f}%, {pytorch_acc_avg:.2f}%")
-# print(f"{keras_acc_std:.2f}%, {pytorch_acc_std:.2f}%")
+print(', '.join(f'avg: {x:,.2f}' for x in keras_energy_avg))
+print(', '.join(f'std: {x:.2f}%' for x in keras_energy_std))
+print(', '.join(f'avg: {x:,.2f}' for x in pytorch_energy_avg))
+print(', '.join(f'std: {x:.2f}%' for x in pytorch_energy_std))
+print(f"{keras_acc_avg:.2f}%, {pytorch_acc_avg:.2f}%")
+print(f"{keras_acc_std:.2f}%, {pytorch_acc_std:.2f}%")
 
 # barplot_energy(keras_energy, reps)
-# labels = [f'keras\n(efficiency: {keras_efficiency:.2f})', f'pytorch\n(efficiency: {pytorch_efficiency:.2f})']
+labels = [f'keras\n(efficiency: {keras_efficiency:.2f})', f'pytorch\n(efficiency: {pytorch_efficiency:.2f})']
 # print(keras_acc_avg, pytorch_acc_avg)
-# plot_energy_and_acc(labels, keras_energy_avg, pytorch_energy_avg, keras_energy_std, pytorch_energy_std, keras_acc_avg, pytorch_acc_avg)
-plot_watts(titles, keras_watts, reps)
+plot_compare_energy_and_acc(labels, keras_energy_avg, pytorch_energy_avg, keras_energy_std, pytorch_energy_std, keras_acc_avg, pytorch_acc_avg)
+# plot_watts(titles, keras_watts, reps)
 # plot_watts(titles, pytorch_watts, reps)
 # plot_avg_watts(keras_watts, "Simple Keras Convolutional NN trained on MNIST dataset, 20 runs average")
 # plot_avg_watts(pytorch_watts, "Simple Pytorch Convolutional NN trained on MNIST dataset, 20 runs average")
