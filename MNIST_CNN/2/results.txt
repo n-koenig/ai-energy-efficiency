@@ -1,0 +1,19 @@
+keras Experiment Data:
+Average energy consumption <Joules (deviation %)>:
+GPU: 174,789,149.24 (0.45%)
+RAM: 914,829.51 (2.28%)
+CPU: 7,916,327.15 (2.45%)
+PKG: 13,670,325.80 (2.17%)
+Average accuracy <accuracy (deviation %)>:
+83.77 (0.89%)
+Efficiency: 0.45623766979649666
+-----------------------------------------------------
+pytorch Experiment Data:
+Average energy consumption <Joules (deviation %)>:
+GPU: 254,364,883.72 (0.52%)
+RAM: 1,298,966.70 (0.37%)
+CPU: 49,699,007.38 (1.19%)
+PKG: 59,083,868.84 (1.00%)
+Average accuracy <accuracy (deviation %)>:
+94.57 (3.59%)
+Efficiency: 0.30968402605502204

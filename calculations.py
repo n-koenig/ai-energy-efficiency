@@ -142,7 +142,7 @@ def plot_avg_watts(title, watts):
     fig.legend(l, labels=['average', 'standard\ndeviation'], loc="right")
         
 
-paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/3/']
+paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 keras_data = ExperimentData('keras', 20, 12)

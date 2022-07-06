@@ -12,11 +12,10 @@
 
 ## results/learnings:
 - pytorch much more energy
-- pytorch much better accuracy
+- pytorch better accuracy
 - keras better (linear) efficiency
 
-- measurements after PC restart, no programs opened, no specific power settings used
-
-
-### 1 
-- started measurements right after PC startup, resulting in the first run being delayed
+## notes
+- 1: measurements after PC restart
+- 2: measurements after PC was already used
+- no programs opened, no specific power settings used
