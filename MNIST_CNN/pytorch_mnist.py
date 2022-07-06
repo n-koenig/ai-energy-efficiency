@@ -159,4 +159,4 @@ for epoch in range(epochs):
     loss = train(epoch)
     test_accuracy, test_loss = test(epoch)
     with open('log_pytorch.csv', 'a') as f:
-        f.write("{},0,{},{},{}\n".format(epoch, loss, test_accuracy, test_loss))
+        f.write("{},0,{},{},{}\n".format(epoch, loss, test_accuracy/100, test_loss))
