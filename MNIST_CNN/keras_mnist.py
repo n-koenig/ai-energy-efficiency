@@ -28,7 +28,7 @@ img_rows, img_cols = 28, 28
 # the data, split between train and test sets
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-(x_train, y_train) = (x_train[0:24000], y_train[0:24000])
+(x_train, y_train) = (x_train, y_train)
 # print(x_train.shape)
 
 if K.image_data_format() == 'channels_first':
