@@ -38,6 +38,7 @@ class ExperimentData:
         print(f"RAM: {self.energy_avg[1]:,.2f} ({self.energy_std[1]:.2f}%)")
         print(f"CPU: {self.energy_avg[2]:,.2f} ({self.energy_std[2]:.2f}%)")
         print(f"PKG: {self.energy_avg[3]:,.2f} ({self.energy_std[3]:.2f}%)")
+        print(f"Total: {np.sum(self.energy_avg[0:3]):,.2f}")
         print(f"Average accuracy <accuracy (deviation %)>:")
         print(f"{self.acc_avg:.2f} ({self.acc_std:.2f}%)")
         print(f"Efficiency: {self.efficiency}")
@@ -192,41 +193,74 @@ def efficiency_test(keras_data_loads, pytorch_data):
     y = -208 + 24 * np.log(x)
     print(x, y)
 
-    plt.scatter(energy_sum, acc)
-    plt.plot(x, y)
+    plt.scatter(energy_sum[:-1], acc[:-1], color='r', label="Keras Varying Data Load Results")
+    plt.scatter(energy_sum[-1], acc[-1], color='g', label="Pytorch Result")
+    plt.plot(x, y, label="Approximation f(x)= 24*ln(x)-208")
+    plt.legend()
+    plt.xlabel("Total Energy Consumption [kJ]")
+    plt.ylabel("Accuracy [%]")
+    plt.title("Energy Consumption paired with accuracy for each experiment")
 
+    
+    
     energy = []
     acc_2 = []
     for i in range(1, 11):
-        energy.append((energy_sum[i] - energy_sum[i-1])/(energy_sum[-1]-energy_sum[0]))
+        # energy.append((energy_sum[i] - energy_sum[i-1])/(energy_sum[-1]-energy_sum[0]))
+        energy.append(energy_sum[i] - energy_sum[i-1])
         acc_2.append(acc[i] - acc[i-1])
 
     print(energy, acc_2)
 
     fig, ax = plt.subplots()
-    ax.scatter(energy, acc_2)
-    [ax.text(energy[i], acc_2[i], str(i)) for i in range(10)]
-    # ax.set_xlim((0, 120000))
+    ax.scatter(energy[:-1], acc_2[:-1], color="r", label="Keras Varying Data Load Results")
+    [ax.text(energy[i], acc_2[i], f"{(i+2)*10}%") for i in range(10)]
+    ax.set_xlabel("Difference in Energy Consumption [kJ]")
+    ax.set_ylabel("Difference in Accuracy [%]")
+    fig.suptitle("Difference in energy consumption and accuracy\nfor each experiment to the prior experiment")
+    ax.legend()
+    ax.set_xlim((0, 20000))
     # ax.plot(energy, acc_2)
 
 
     fig, ax = plt.subplots()
-    eff = [((acc[i])/energy_sum[i]) for i in range(11)]
-    eff_2 = [((acc[i]**2)/energy_sum[i]) for i in range(11)]
-    eff_3 = [((acc[i]**4)/energy_sum[i]) for i in range(11)]
-    eff_4 = [((math.exp(acc[i]/100))/energy_sum[i]) for i in range(11)]
+    eff = [((acc[i])/energy_sum[i]) for i in range(10)]
+    eff_2 = [((acc[i]**2)/energy_sum[i]) for i in range(10)]
+    eff_3 = [((acc[i]**4)/energy_sum[i]) for i in range(10)]
+    # eff_4 = [((math.exp(acc[i]/100))/energy_sum[i]) for i in range(11)]
 
-    print(eff_4)
+    ax.set_xlabel("Experiment number")
+    ax.set_ylabel("Efficiency [%/kJ]")
+    ax.plot(eff, 'ro', label="efficiency = accuracy/energy")
+    ax.plot(eff, 'r', label="efficiency = accuracy/energy")
+    ax.twinx().plot(eff_2, 'yo', label="efficiency = accuracy^2/energy")
+    ax.twinx().plot(eff_2, 'y', label="efficiency = accuracy^2/energy")
+    ax.twinx().plot(eff_3, 'bo', label="efficiency = accuracy^4/energy")
+    ax.twinx().plot(eff_3, 'b', label="efficiency = accuracy^4/energy")
+    fig.suptitle("Adjustable efficiency function")
+    ax.legend()
 
+    print(eff, eff_2, eff_3)
+
+    fig, ax = plt.subplots()
     eff = (eff - np.min(eff)) / (np.max(eff) - np.min(eff))
     eff_2 = (eff_2 - np.min(eff_2)) / (np.max(eff_2) - np.min(eff_2))
     eff_3 = (eff_3 - np.min(eff_3)) / (np.max(eff_3) - np.min(eff_3))
-    eff_4 = (eff_4 - np.min(eff_4)) / (np.max(eff_4) - np.min(eff_4))
+    # eff_4 = (eff_4 - np.min(eff_4)) / (np.max(eff_4) - np.min(eff_4))
 
+    print(eff, eff_2, eff_3)
+    
     # plt.scatter(np.linspace(0, 10, 11), eff)
-    ax.plot(eff)
-    ax.plot(eff_2)
-    ax.plot(eff_3)
+    ax.set_xlabel("Experiment number")
+    ax.set_ylabel("Efficiency [%/kJ]")
+    ax.plot(eff, 'ro', label="efficiency = accuracy/energy")
+    ax.plot(eff, 'r')
+    ax.plot(eff_2, 'yo', label="efficiency = accuracy^2/energy")
+    ax.plot(eff_2, 'y')
+    ax.plot(eff_3, 'bo', label="efficiency = accuracy^4/energy")
+    ax.plot(eff_3, 'b')
+    fig.suptitle("Adjustable efficiency function")
+    ax.legend()
     # ax.plot(eff_4)
     plt.show()
 
@@ -236,13 +270,13 @@ paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 keras_data = ExperimentData('keras', 20, 12)
-keras_data.set_energy_data(paths[1], 180)
-keras_data.set_acc_data(paths[1])
+keras_data.set_energy_data(paths[2], 180)
+keras_data.set_acc_data(paths[2])
 keras_data.set_efficiency_data()
 
 pytorch_data = ExperimentData('pytorch', 20, 12)
-pytorch_data.set_energy_data(paths[1], 180)
-pytorch_data.set_acc_data(paths[1])
+pytorch_data.set_energy_data(paths[2], 180)
+pytorch_data.set_acc_data(paths[2])
 pytorch_data.set_efficiency_data()
 
 keras_data_loads = eval_data_load_exp()
@@ -251,21 +285,21 @@ keras_data.print_data()
 print("-----------------------------------------------------")
 pytorch_data.print_data()
 
-# efficiency_test(keras_data_loads, pytorch_data)
+efficiency_test(keras_data_loads, pytorch_data)
 
 # barplot_energy("title", keras_energy, reps)
 
 labels = [f'keras\n(efficiency: {keras_data.efficiency:.2f})', f'pytorch\n(efficiency: {pytorch_data.efficiency:.2f})']
 labels = ['keras', 'pytorch']
-plot_compare_energy_and_acc(f"Simple Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average",
-                            labels,
-                            [keras_data.energy_avg, pytorch_data.energy_avg],
-                            [keras_data.energy_std, pytorch_data.energy_std],
-                            [keras_data.acc_avg, pytorch_data.acc_avg],
-                            True)
+# plot_compare_energy_and_acc(f"Simple Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average",
+#                             labels,
+#                             [keras_data.energy_avg, pytorch_data.energy_avg],
+#                             [keras_data.energy_std, pytorch_data.energy_std],
+#                             [keras_data.acc_avg, pytorch_data.acc_avg],
+#                             True)
 
-plot_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, keras_data.watts, keras_data.reps, 160)
-plot_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, pytorch_data.watts, pytorch_data.reps, 160)
-plot_avg_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", keras_data.watts, 160)
-plot_avg_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", pytorch_data.watts, 160)
+# plot_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, keras_data.watts, keras_data.reps, 160)
+# plot_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, pytorch_data.watts, pytorch_data.reps, 160)
+# plot_avg_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", keras_data.watts, 160)
+# plot_avg_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", pytorch_data.watts, 160)
 plt.show()
