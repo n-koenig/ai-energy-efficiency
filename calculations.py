@@ -22,6 +22,18 @@ class ExperimentData:
         self.energy_avg = np.average(self.energy, axis=0)
         self.energy_std = 100 * np.std(self.energy, axis=0)/self.energy_avg
 
+    def set_energy_data_2(self, path):
+        energy = []
+        for i in range(self.reps):
+            with open(f"{path}power_levels_{self.name}_{i}.txt") as f:
+                data = f.readlines()
+                data = [float(x[0:-2]) for x in data]
+                energy.append(data)
+            # energy.append(np.genfromtxt(f"{path}power_levels_{self.name}_{i}.txt", delimiter='\n'))    
+        self.energy = energy
+        self.energy_avg = np.average(self.energy, axis=0)
+        self.energy_std = 100 * np.std(self.energy, axis=0)/self.energy_avg
+
     def set_acc_data(self, path, epochs):
         self.accs = read_accs(path, self.name, self.reps, epochs)
         self.acc_avg = 100*np.average(self.accs)
@@ -266,7 +278,7 @@ def efficiency_test(keras_data_loads, pytorch_data):
 
 
 
-paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'sleep/2/']
+paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'sleep/2/', 'pinpoint_testing/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 keras_data = ExperimentData('keras', 20)
@@ -279,21 +291,28 @@ pytorch_data.set_energy_data(paths[2], 180)
 pytorch_data.set_acc_data(paths[2], 12)
 pytorch_data.set_efficiency_data()
 
-sleep_data = ExperimentData('sleep', 10)
+sleep_data = ExperimentData('sleep', 20)
 sleep_data.set_energy_data(paths[4], 40)
+
+sleep_summary = ExperimentData('sleep_summary', 20)
+sleep_summary.set_energy_data_2(paths[7])
+
+print(sleep_data.energy)
+print(sleep_summary.energy)
 
 stress_data = ExperimentData('stress', 20)
 stress_data.set_energy_data(paths[5], 40)
 
 # keras_data_loads = eval_data_load_exp()
 
-keras_data.print_data()
+# keras_data.print_data()
 print("-----------------------------------------------------")
-pytorch_data.print_data()
+# pytorch_data.print_data()
 print("-----------------------------------------------------")
 sleep_data.print_data()
 print("-----------------------------------------------------")
-stress_data.print_data()
+# stress_data.print_data()
+sleep_summary.print_data()
 
 # efficiency_test(keras_data_loads, pytorch_data)
 
@@ -312,8 +331,8 @@ labels = ['keras', 'pytorch']
 # plot_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, pytorch_data.watts, pytorch_data.reps, 160)
 # plot_avg_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", keras_data.watts, 160)
 # plot_avg_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", pytorch_data.watts, 160)
-plot_watts(f"Sleep Command", titles, sleep_data.watts[:10], 10, 40)
-plot_avg_watts("Sleep Command Average", sleep_data.watts[:10], 40)
+# plot_watts(f"Sleep Command", titles, sleep_data.watts[:10], 10, 40)
+# plot_avg_watts("Sleep Command Average", sleep_data.watts[:10], 40)
 # plot_watts(f"Stress Command", titles, stress_data.watts, stress_data.reps, 40)
 # plot_avg_watts("Stress Command Average", stress_data.watts, 40)
 
