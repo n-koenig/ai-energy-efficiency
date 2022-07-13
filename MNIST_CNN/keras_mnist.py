@@ -65,7 +65,7 @@ model.add(Dropout(0.5))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
-              optimizer=keras.optimizers.Adadelta(),
+              optimizer=keras.optimizers.Adadelta(lr=0.1, rho=0.95, epsilon=1e-07),
               metrics=['accuracy'])
 
 csv_logger = CSVLogger('log_keras.csv', separator=',', append=True)
@@ -78,3 +78,5 @@ model.fit(x_train, y_train,
 score = model.evaluate(x_test, y_test, verbose=0)
 # print('Test loss:', score[0])
 # print('Test accuracy:', score[1])
+
+

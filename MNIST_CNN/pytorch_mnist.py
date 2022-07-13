@@ -2,6 +2,8 @@
 adapted from: https://gist.github.com/kdubovikov/eb2a4c3ecadd5295f68c126542e59f0a
 changes:
     - tensor.item() for 0-dim tensors
+    - batch-size to 128
+    - model architecture and optimizer adapted to keras example
 """
 
 import torch
@@ -37,60 +39,24 @@ test_loader = torch.utils.data.DataLoader(datasets.MNIST('./MNIST_CNN/mnist_data
                                            batch_size=batch_size, 
                                            shuffle=True)
 
-class CNNClassifier1(nn.Module):
-    """Custom module for a simple convnet classifier"""
-    def __init__(self):
-        super(CNNClassifier1, self).__init__()
-        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-        self.dropout = nn.Dropout2d()
-        self.fc1 = nn.Linear(320, 50)
-        self.fc2 = nn.Linear(50, 10)
-    
-    def forward(self, x):
-        # input is 28x28x1
-        # conv1(kernel=5, filters=10) 28x28x10 -> 24x24x10
-        # max_pool(kernel=2) 24x24x10 -> 12x12x10
-        
-        # Do not be afraid of F's - those are just functional wrappers for modules form nn package
-        # Please, see for yourself - http://pytorch.org/docs/_modules/torch/nn/functional.html
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        
-        # conv2(kernel=5, filters=20) 12x12x20 -> 8x8x20
-        # max_pool(kernel=2) 8x8x20 -> 4x4x20
-        x = F.relu(F.max_pool2d(self.dropout(self.conv2(x)), 2))
-        
-        # flatten 4x4x20 = 320
-        x = x.view(-1, 320)
-        
-        # 320 -> 50
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
-        
-        # 50 -> 10
-        x = self.fc2(x)
-        
-        # transform to logits
-        return F.log_softmax(x)
-
-class CNNClassifier2(nn.Module):
+class CNNClassifier(nn.Module):
     """Adapted model from tensorflow example"""
     def __init__(self):
-        super(CNNClassifier2, self).__init__()
+        super(CNNClassifier, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=(3, 3))
         self.conv2 = nn.Conv2d(32, 64, kernel_size=(3, 3))
         self.max_pool = nn.MaxPool2d(2)
-        self.droupout1 = nn.Dropout(0,25)
+        self.droupout1 = nn.Dropout(0.25)
         self.dense1 = nn.Linear(9216, 128)
-        self.dropout2 = nn.Dropout(0,5)
-        self.dense2 = nn.Linear(128, 10)
+        self.dropout2 = nn.Dropout(0.5)
+        self.dense2 = nn.Linear(128, num_classes)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = self.max_pool(x)
         x = self.droupout1(x)
-        x = x.reshape(-1, 64*12*12)
+        x = torch.flatten(x, 1)
         x = F.relu(self.dense1(x))
         x = self.dropout2(x)
         x = F.softmax(self.dense2(x))
@@ -99,8 +65,8 @@ class CNNClassifier2(nn.Module):
 
 # create classifier and optimizer objects
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-clf = CNNClassifier2().to(device)
-opt = optim.Adadelta(clf.parameters(), lr=0.1)
+clf = CNNClassifier().to(device)
+opt = optim.Adadelta(clf.parameters(), lr=0.1, rho=0.95, eps=1e-07)
 
 loss_history = []
 acc_history = []
@@ -118,13 +84,10 @@ def train(epoch):
         preds = clf(data)
         loss = F.nll_loss(preds, target)
         loss.backward()
-        loss_history.append(loss.item())
         opt.step()
         
         # if batch_id % 100 == 0:
         #     print(loss.item())
-
-    return loss.item()
 
 def test(epoch):
     clf.eval() # set model in inference mode (need this because of dropout)
@@ -142,21 +105,20 @@ def test(epoch):
             pred = output.data.max(1)[1] # get the index of the max log-probability
             correct += pred.eq(target.data).cpu().sum()
 
-        test_loss = test_loss
         test_loss /= len(test_loader) # loss function already averages over batch size
-        accuracy = 100. * correct / len(test_loader.dataset)
-        acc_history.append(accuracy)
+        test_accuracy = correct / len(test_loader.dataset)
+        acc_history.append(test_accuracy)
+        loss_history.append(test_loss)
         # print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         #     test_loss, correct, len(test_loader.dataset),
-        #     accuracy))
-
-    return accuracy, test_loss
-
-# with open("log_pytorch", 'a') as f:
-#     f.write("epoch,accuracy,loss,val_accuracy,val_loss\n")
+        #     test_accuracy))
 
 for epoch in range(epochs):
-    loss = train(epoch)
-    test_accuracy, test_loss = test(epoch)
-    with open('log_pytorch.csv', 'a') as f:
-        f.write("{},0,{},{},{}\n".format(epoch, loss, test_accuracy/100, test_loss))
+    # print("Epoch %d" % epoch)
+    train(epoch)
+    test(epoch)
+
+with open('log_pytorch.csv', 'a') as f:
+    # f.write("epoch,accuracy,loss,val_accuracy,val_loss\n")
+    for epoch in range(epochs):
+        f.write("{},0,0,{},{}\n".format(epoch, acc_history[epoch], loss_history[epoch]))
