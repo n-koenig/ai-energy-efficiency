@@ -1,15 +1,14 @@
 # ai-energy-efficiency
 
 ## next steps:
-- compute energy from raw data
-- collect and compute average accuracy and energy
-- further compute standard deviaton and what not for accuracy and energy
+- measure sleep/idle consumption
+- check pytorch model and keras model
+    - maybe check for the random seed stuff
+- test different pinpoint execution styles (and maybe validate values against nvidia-smi)
+- check energy calculation (sampling interval, correct integration, subtract idle power)
 
----
 
-- write functions for different calculations/visualizations from raw data
-- look into pytorch lightning/benchmarking
-- look into wisemat model
+- write script to run all sub-experiments directly consecutively
 
 
 ## conda

@@ -5,10 +5,9 @@ import matplotlib.pyplot as plt
 import math
 
 class ExperimentData:
-    def __init__(self, name, reps, epochs):
+    def __init__(self, name, reps):
         self.name = name
         self.reps = reps
-        self.epochs = epochs
         self.watts = []
         self.energy = []
         self.energy_avg = []
@@ -23,8 +22,8 @@ class ExperimentData:
         self.energy_avg = np.average(self.energy, axis=0)
         self.energy_std = 100 * np.std(self.energy, axis=0)/self.energy_avg
 
-    def set_acc_data(self, path):
-        self.accs = read_accs(path, self.name, self.reps, self.epochs)
+    def set_acc_data(self, path, epochs):
+        self.accs = read_accs(path, self.name, self.reps, epochs)
         self.acc_avg = 100*np.average(self.accs)
         self.acc_std = 100*np.std(self.accs)
 
@@ -155,9 +154,9 @@ def plot_avg_watts(title, watts, offset):
 def eval_data_load_exp():
     keras_data_loads = []
     for i in range(10):
-        keras_data_loads.append(ExperimentData(f'keras_{(i+1)*10}', 20, 12))
+        keras_data_loads.append(ExperimentData(f'keras_{(i+1)*10}', 20))
         keras_data_loads[i].set_energy_data(paths[3], 400)
-        keras_data_loads[i].set_acc_data(paths[3])
+        keras_data_loads[i].set_acc_data(paths[3], 12)
         keras_data_loads[i].set_efficiency_data()
     for i in range(10):
         keras_data_loads[i].print_data()
@@ -267,30 +266,40 @@ def efficiency_test(keras_data_loads, pytorch_data):
 
 
 
-paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/']
+paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/', 'stress/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
-keras_data = ExperimentData('keras', 20, 12)
+keras_data = ExperimentData('keras', 20)
 keras_data.set_energy_data(paths[2], 180)
-keras_data.set_acc_data(paths[2])
+keras_data.set_acc_data(paths[2], 12)
 keras_data.set_efficiency_data()
 
-pytorch_data = ExperimentData('pytorch', 20, 12)
+pytorch_data = ExperimentData('pytorch', 20)
 pytorch_data.set_energy_data(paths[2], 180)
-pytorch_data.set_acc_data(paths[2])
+pytorch_data.set_acc_data(paths[2], 12)
 pytorch_data.set_efficiency_data()
 
-keras_data_loads = eval_data_load_exp()
+sleep_data = ExperimentData('sleep', 20)
+sleep_data.set_energy_data(paths[4], 40)
+
+stress_data = ExperimentData('stress', 20)
+stress_data.set_energy_data(paths[5], 40)
+
+# keras_data_loads = eval_data_load_exp()
 
 keras_data.print_data()
 print("-----------------------------------------------------")
 pytorch_data.print_data()
+print("-----------------------------------------------------")
+sleep_data.print_data()
+print("-----------------------------------------------------")
+stress_data.print_data()
 
-efficiency_test(keras_data_loads, pytorch_data)
+# efficiency_test(keras_data_loads, pytorch_data)
 
 # barplot_energy("title", keras_energy, reps)
 
-labels = [f'keras\n(efficiency: {keras_data.efficiency:.2f})', f'pytorch\n(efficiency: {pytorch_data.efficiency:.2f})']
+# labels = [f'keras\n(efficiency: {keras_data.efficiency:.2f})', f'pytorch\n(efficiency: {pytorch_data.efficiency:.2f})']
 labels = ['keras', 'pytorch']
 # plot_compare_energy_and_acc(f"Simple Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average",
 #                             labels,
@@ -303,4 +312,9 @@ labels = ['keras', 'pytorch']
 # plot_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, pytorch_data.watts, pytorch_data.reps, 160)
 # plot_avg_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", keras_data.watts, 160)
 # plot_avg_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", pytorch_data.watts, 160)
+plot_watts(f"Sleep Command", titles, sleep_data.watts, sleep_data.reps, 40)
+plot_avg_watts("Sleep Command Average", sleep_data.watts, 40)
+plot_watts(f"Stress Command", titles, stress_data.watts, stress_data.reps, 40)
+plot_avg_watts("Stress Command Average", stress_data.watts, 40)
+
 plt.show()
