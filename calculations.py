@@ -79,10 +79,10 @@ def read_accs(path, file_name, reps, epochs):
 
 
 def energy_from_watts(watts, offset, interval):
-    energy_sum = np.asarray([np.sum(x[offset+1:-offset], axis=0) for x in watts])
+    energy_sum = np.asarray([np.sum(x[offset+1:-offset], axis=0)/(1000000/interval) for x in watts])
     energy_integral = np.asarray([integrate.simps(x[offset+1:-offset], axis=0)/(1000000/interval) for x in watts])
 
-    return energy_integral
+    return energy_sum
 
 
 def linear_efficiency(avg_energy, avg_acc):
@@ -136,7 +136,7 @@ def plot_watts(title, titles, watts, reps, offset):
         a.tick_params(axis='y', which='both', bottom=True, top=False, labelleft=True)
     fig.text(0.5, 0.04, 'Sample number', ha='center', va='center')
     fig.text(0.06, 0.5, 'Power level in mW', ha='center', va='center', rotation='vertical')
-    fig.legend(l, labels=[f"Run {i}" for i in range(20)], loc="right")
+    # fig.legend(l, labels=[f"Run {i}" for i in range(20)], loc="right")
 
 def tolerant_mean(arrs):
     # https://stackoverflow.com/a/59281468
@@ -181,15 +181,13 @@ def eval_data_load_exp(keras_data_loads):
                                [keras_data_loads[i].energy_std for i in range(10)], 
                                [keras_data_loads[i].acc_avg for i in range(10)],
                                True)
-    plt.savefig("./efficiency_comparison.png")
+    # plt.savefig("./efficiency_comparison.png")
 
     for i in range(10):
-        plot_watts(f"Simple keras Convolutional NN trained on MNIST dataset with {(i+1)*10} % training data, {keras_data.reps} runs", titles, keras_data_loads[i].watts, keras_data_loads[i].reps, 400)
-        plt.savefig(f"./keras_{(i+1)*10}_watts.png", dpi=199)
-        plot_avg_watts(f"Simple keras Convolutional NN trained on MNIST dataset with {(i+1)*10} % training data, {keras_data.reps} runs average", keras_data_loads[i].watts, 400)
-        plt.savefig(f"./keras_{(i+1)*10}_watts_average.png", dpi=199)
-
-    return keras_data_loads
+        plot_watts(f"Simple keras Convolutional NN trained on MNIST dataset with {(i+1)*10} % training data, {keras_data.reps} runs", titles, keras_data_loads[i].watts, keras_data_loads[i].reps, 1)
+        # plt.savefig(f"./keras_{(i+1)*10}_watts.png", dpi=199)
+        plot_avg_watts(f"Simple keras Convolutional NN trained on MNIST dataset with {(i+1)*10} % training data, {keras_data.reps} runs average", keras_data_loads[i].watts, 1)
+        # plt.savefig(f"./keras_{(i+1)*10}_watts_average.png", dpi=199)
 
 
 def eval_pinpoint_exp():
@@ -302,7 +300,7 @@ def efficiency_test(keras_data_loads, pytorch_data):
 
 
 
-paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'pinpoint_testing/', 'test/']
+paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'pinpoint_testing/', 'test/', 'MNIST_CNN/4/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 keras_data = ExperimentData('keras', 20)
@@ -317,9 +315,9 @@ pytorch_data.set_efficiency_data()
 
 keras_data_loads = []
 for i in range(10):
-    keras_data_loads.append(ExperimentData(f'keras_{(i+1)*10}', 20))
-    keras_data_loads[i].set_energy_data(paths[3], 400)
-    keras_data_loads[i].set_acc_data(paths[3], 12)
+    keras_data_loads.append(ExperimentData(f'keras_{(i+1)*10}', 2))
+    keras_data_loads[i].set_energy_data(paths[8], 1)
+    keras_data_loads[i].set_acc_data(paths[8], 12)
     keras_data_loads[i].set_efficiency_data()
 
 keras_test_1 = ExperimentData('keras', 2)
@@ -328,8 +326,8 @@ keras_test_1.set_acc_data(paths[0], 12)
 keras_test_1.set_efficiency_data()
 
 keras_test_2 = ExperimentData('keras', 2)
-keras_test_2.set_energy_data(paths[-1], 400)
-keras_test_2.set_acc_data(paths[-1], 12)
+keras_test_2.set_energy_data(paths[7], 400)
+keras_test_2.set_acc_data(paths[7], 12)
 keras_test_2.set_efficiency_data()
 
 pytorch_test_1 = ExperimentData('pytorch', 2)
@@ -338,21 +336,27 @@ pytorch_test_1.set_acc_data(paths[0], 12)
 pytorch_test_1.set_efficiency_data()
 
 pytorch_test_2 = ExperimentData('pytorch', 2)
-pytorch_test_2.set_energy_data(paths[-1], 400)
-pytorch_test_2.set_acc_data(paths[-1], 12)
+pytorch_test_2.set_energy_data(paths[7], 400)
+pytorch_test_2.set_acc_data(paths[7], 12)
 pytorch_test_2.set_efficiency_data()
 
 print(pytorch_test_1.accs)
 print(pytorch_test_2.accs)
 
-keras_data.print_data()
+keras_test_1.print_data()
 print("-----------------------------------------------------")
-pytorch_data.print_data()
+keras_test_2.print_data()
 print("-----------------------------------------------------")
+pytorch_test_1.print_data()
+print("-----------------------------------------------------")
+pytorch_test_2.print_data()
+print("-----------------------------------------------------")
+
+
 # test.print_data()
 
 # eval_pinpoint_exp()
-# eval_data_load_exp()
+eval_data_load_exp(keras_data_loads)
 
 # efficiency_test(keras_data_loads, pytorch_data)
 
@@ -360,17 +364,17 @@ print("-----------------------------------------------------")
 
 # labels = [f'keras\n(efficiency: {keras_data.efficiency:.2f})', f'pytorch\n(efficiency: {pytorch_data.efficiency:.2f})']
 labels = ['keras', 'keras 2', 'pytorch', 'pytorch 2']
-plot_compare_energy_and_acc(f"Simple Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average",
-                            labels,
-                            [keras_test_1.energy_avg, keras_test_2.energy_avg, pytorch_test_1.energy_avg, pytorch_test_2.energy_avg],
-                            [keras_test_1.energy_std, keras_test_2.energy_std, pytorch_test_1.energy_std, pytorch_test_2.energy_std],
-                            [keras_test_1.acc_avg, keras_test_2.acc_avg, pytorch_test_1.acc_avg, pytorch_test_2.acc_avg],
-                            True)
+# plot_compare_energy_and_acc(f"Simple Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average",
+#                             labels,
+#                             [keras_test_1.energy_avg, keras_test_2.energy_avg, pytorch_test_1.energy_avg, pytorch_test_2.energy_avg],
+#                             [keras_test_1.energy_std, keras_test_2.energy_std, pytorch_test_1.energy_std, pytorch_test_2.energy_std],
+#                             [keras_test_1.acc_avg, keras_test_2.acc_avg, pytorch_test_1.acc_avg, pytorch_test_2.acc_avg],
+#                             True)
 
-plot_watts(f"Simple {keras_test_1.name} Convolutional NN trained on MNIST dataset, {keras_test_1.reps} runs", titles, keras_test_1.watts, keras_test_1.reps, 200)
-plot_watts(f"Simple {keras_test_1.name} Convolutional NN trained on MNIST dataset, {keras_test_1.reps} runs", titles, keras_test_2.watts, keras_test_2.reps, 400)
-plot_watts(f"Simple {pytorch_test_2.name} Convolutional NN trained on MNIST dataset, {keras_test_1.reps} runs", titles, pytorch_test_1.watts, pytorch_test_1.reps, 200)
-plot_watts(f"Simple {pytorch_test_2.name} Convolutional NN trained on MNIST dataset, {keras_test_1.reps} runs", titles, pytorch_test_2.watts, pytorch_test_2.reps, 400)
+# plot_watts(f"Simple {keras_test_1.name} Convolutional NN trained on MNIST dataset, {keras_test_1.reps} runs", titles, keras_test_1.watts, keras_test_1.reps, 200)
+# plot_watts(f"Simple {keras_test_1.name} Convolutional NN trained on MNIST dataset, {keras_test_1.reps} runs", titles, keras_test_2.watts, keras_test_2.reps, 400)
+# plot_watts(f"Simple {pytorch_test_2.name} Convolutional NN trained on MNIST dataset, {keras_test_1.reps} runs", titles, pytorch_test_1.watts, pytorch_test_1.reps, 200)
+# plot_watts(f"Simple {pytorch_test_2.name} Convolutional NN trained on MNIST dataset, {keras_test_1.reps} runs", titles, pytorch_test_2.watts, pytorch_test_2.reps, 400)
 # plot_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, pytorch_data.watts, pytorch_data.reps, 160)
 # plot_avg_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", keras_data.watts, 160)
 # plot_avg_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", pytorch_data.watts, 160)

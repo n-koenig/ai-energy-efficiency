@@ -10,6 +10,7 @@ Gets to 99.25% test accuracy after 12 epochs
 '''
 
 from __future__ import print_function
+import argparse
 import keras
 from keras.datasets import mnist
 from keras.models import Sequential
@@ -22,13 +23,18 @@ batch_size = 128
 num_classes = 10
 epochs = 12
 
+parser = argparse.ArgumentParser(description='Provide amount of training data to be used')
+parser.add_argument('train_data_amount', type=int, metavar='N', help='specify amount of training data to be used, in N percent of total training data', default=100)
+
 # input image dimensions
 img_rows, img_cols = 28, 28
 
 # the data, split between train and test sets
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-(x_train, y_train) = (x_train, y_train)
+argument = parser.parse_args().train_data_amount
+train_amount =  int(argument * len(x_train) / 100)
+(x_train, y_train) = (x_train[:train_amount], y_train[:train_amount])
 # print(x_train.shape)
 
 if K.image_data_format() == 'channels_first':
@@ -65,10 +71,10 @@ model.add(Dropout(0.5))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
-              optimizer=keras.optimizers.Adadelta(lr=0.1, rho=0.95, epsilon=1e-07),
+              optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
-csv_logger = CSVLogger('log_keras.csv', separator=',', append=True)
+csv_logger = CSVLogger(f'log_keras_{argument}.csv', separator=',', append=True)
 model.fit(x_train, y_train,
           batch_size=batch_size,
           epochs=epochs,

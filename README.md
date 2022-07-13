@@ -1,13 +1,15 @@
 # ai-energy-efficiency
 
 ## next steps:
+- for some reason, my watt-integration is considerably smaller than what pinpoint accumulates automatically
+- for some very strange reason, keras watts look completely different at 80%, apparently because is the only training data amount with a perfect batch size (48000/128=375), all others dont divide evenly
+
+
 - measure sleep/idle consumption
 - check pytorch model and keras model
     - maybe check for the random seed stuff
 - test different pinpoint execution styles (and maybe validate values against nvidia-smi)
 - check energy calculation (sampling interval, correct integration, subtract idle power)
-
-
 - write script to run all sub-experiments directly consecutively
 
 
