@@ -1,0 +1,9 @@
+Energy counter stats for 'sleep 10':
+[interval: 50ms, before: 2000ms, after: 2000ms, delay: 0ms, runs: 20]
+
+	238.31 J nvml:nvidia_geforce_gtx_970_0	( +- 0.34% )
+	  7.24 J rapl:ram                     	( +- 0.14% )
+	 25.71 J rapl:cores                   	( +- 5.38% )
+	189.83 J rapl:pkg                     	( +- 0.73% )
+
+	10.00348395 seconds time elapsed ( +- 0.00% )

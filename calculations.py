@@ -22,6 +22,7 @@ class ExperimentData:
         self.energy_avg = np.average(self.energy, axis=0)
         self.energy_std = 100 * np.std(self.energy, axis=0)/self.energy_avg
 
+
     def set_energy_data_2(self, path):
         energy = []
         for i in range(self.reps):
@@ -33,6 +34,12 @@ class ExperimentData:
         self.energy = energy
         self.energy_avg = np.average(self.energy, axis=0)
         self.energy_std = 100 * np.std(self.energy, axis=0)/self.energy_avg
+
+
+    def set_energy_data_3(self, path):
+        with open(f"{path}power_levels_{self.name}_{0}.txt") as f:
+            self.energy = f.read()
+
 
     def set_acc_data(self, path, epochs):
         self.accs = read_accs(path, self.name, self.reps, epochs)
@@ -73,7 +80,7 @@ def read_accs(path, file_name, reps, epochs):
 
 def energy_from_watts(watts, offset):
     energy_sum = np.asarray([np.sum(x[offset+1:-offset], axis=0) for x in watts])
-    energy_integral = np.asarray([integrate.simps(x[offset+1:-offset], axis=0) for x in watts])
+    energy_integral = np.asarray([integrate.simps(x[offset+1:-offset], axis=0)/20000 for x in watts])
 
     return energy_integral
 
@@ -278,7 +285,7 @@ def efficiency_test(keras_data_loads, pytorch_data):
 
 
 
-paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'sleep/2/', 'pinpoint_testing/']
+paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'pinpoint_testing/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 keras_data = ExperimentData('keras', 20)
@@ -295,10 +302,14 @@ sleep_data = ExperimentData('sleep', 20)
 sleep_data.set_energy_data(paths[4], 40)
 
 sleep_summary = ExperimentData('sleep_summary', 20)
-sleep_summary.set_energy_data_2(paths[7])
+sleep_summary.set_energy_data_2(paths[6])
+
+sleep_summary_r = ExperimentData('sleep_summary_r', 1)
+sleep_summary_r.set_energy_data_3(paths[6])
 
 print(sleep_data.energy)
 print(sleep_summary.energy)
+print(sleep_summary_r.energy)
 
 stress_data = ExperimentData('stress', 20)
 stress_data.set_energy_data(paths[5], 40)
@@ -331,8 +342,8 @@ labels = ['keras', 'pytorch']
 # plot_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs", titles, pytorch_data.watts, pytorch_data.reps, 160)
 # plot_avg_watts(f"Simple {keras_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", keras_data.watts, 160)
 # plot_avg_watts(f"Simple {pytorch_data.name} Convolutional NN trained on MNIST dataset, {keras_data.reps} runs average", pytorch_data.watts, 160)
-# plot_watts(f"Sleep Command", titles, sleep_data.watts[:10], 10, 40)
-# plot_avg_watts("Sleep Command Average", sleep_data.watts[:10], 40)
+plot_watts(f"Sleep Command", titles, sleep_data.watts, 20, 40)
+plot_avg_watts("Sleep Command Average", sleep_data.watts, 40)
 # plot_watts(f"Stress Command", titles, stress_data.watts, stress_data.reps, 40)
 # plot_avg_watts("Stress Command Average", stress_data.watts, 40)
 
