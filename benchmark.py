@@ -27,14 +27,14 @@ def data_amount_exp():
         exp_name = experiments[0] + f'_{(i+1)*10}'
         out_path = output_paths[1]
         os.makedirs(out_path, exist_ok=True)
-        run_experiment(2, out_path, exp_name, workload)
+        run_experiment(20, out_path, exp_name, workload)
 
 
 experiments = ['keras', 'pytorch', 'sleep', 'stress', 'sleep_summary', 'sleep_summary_r']
 workload_envs = [['bash',  '-c', 'source /home/nils/miniconda3/bin/activate tf && python3 '],
                 ['bash', '-c', 'source /home/nils/miniconda3/bin/activate pytorch && python3 ']]
 script_paths = ['MNIST_CNN/keras_mnist.py', 'MNIST_CNN/pytorch_mnist.py']
-output_paths = ["dump/", "MNIST_CNN/4/", 'sleep/2/', 'stress/', 'pinpoint_testing/', 'dump2/']
+output_paths = ["dump/", "MNIST_CNN/5/", 'sleep/2/', 'stress/', 'pinpoint_testing/', 'dump2/']
 
 exp_id = 0
 reps = 1

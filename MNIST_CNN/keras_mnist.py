@@ -18,6 +18,9 @@ from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.callbacks import CSVLogger
 from keras import backend as K
+import numpy as np
+import random
+import tensorflow as tf
 
 batch_size = 128
 num_classes = 10
@@ -25,6 +28,10 @@ epochs = 12
 
 parser = argparse.ArgumentParser(description='Provide amount of training data to be used')
 parser.add_argument('train_data_amount', type=int, metavar='N', help='specify amount of training data to be used, in N percent of total training data', default=100)
+
+np.random.seed(123)
+random.seed(123)
+tf.random.set_seed(1234)
 
 # input image dimensions
 img_rows, img_cols = 28, 28
@@ -71,7 +78,7 @@ model.add(Dropout(0.5))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
-              optimizer=keras.optimizers.Adadelta(),
+              optimizer=keras.optimizers.Adadelta(learning_rate=0.01),
               metrics=['accuracy'])
 
 csv_logger = CSVLogger(f'log_keras_{argument}.csv', separator=',', append=True)

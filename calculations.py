@@ -184,9 +184,9 @@ def eval_data_load_exp(keras_data_loads):
     # plt.savefig("./efficiency_comparison.png")
 
     for i in range(10):
-        plot_watts(f"Simple keras Convolutional NN trained on MNIST dataset with {(i+1)*10} % training data, {keras_data.reps} runs", titles, keras_data_loads[i].watts, keras_data_loads[i].reps, 1)
+        plot_watts(f"Simple keras Convolutional NN trained on MNIST dataset with {(i+1)*10} % training data, {keras_data.reps} runs", titles, keras_data_loads[i].watts, keras_data_loads[i].reps, 200)
         # plt.savefig(f"./keras_{(i+1)*10}_watts.png", dpi=199)
-        plot_avg_watts(f"Simple keras Convolutional NN trained on MNIST dataset with {(i+1)*10} % training data, {keras_data.reps} runs average", keras_data_loads[i].watts, 1)
+        # plot_avg_watts(f"Simple keras Convolutional NN trained on MNIST dataset with {(i+1)*10} % training data, {keras_data.reps} runs average", keras_data_loads[i].watts, 1)
         # plt.savefig(f"./keras_{(i+1)*10}_watts_average.png", dpi=199)
 
 
@@ -300,7 +300,7 @@ def efficiency_test(keras_data_loads, pytorch_data):
 
 
 
-paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'pinpoint_testing/', 'test/', 'MNIST_CNN/4/']
+paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'pinpoint_testing/', 'test/', 'MNIST_CNN/4/', 'MNIST_CNN/5/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 keras_data = ExperimentData('keras', 20)
@@ -315,9 +315,9 @@ pytorch_data.set_efficiency_data()
 
 keras_data_loads = []
 for i in range(10):
-    keras_data_loads.append(ExperimentData(f'keras_{(i+1)*10}', 2))
-    keras_data_loads[i].set_energy_data(paths[8], 1)
-    keras_data_loads[i].set_acc_data(paths[8], 12)
+    keras_data_loads.append(ExperimentData(f'keras_{(i+1)*10}', 20))
+    keras_data_loads[i].set_energy_data(paths[9], 200)
+    keras_data_loads[i].set_acc_data(paths[9], 12)
     keras_data_loads[i].set_efficiency_data()
 
 keras_test_1 = ExperimentData('keras', 2)
