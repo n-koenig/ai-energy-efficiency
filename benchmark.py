@@ -19,22 +19,40 @@ def run_experiment(reps, out_path, exp_name, workload):
 
 
 def data_amount_exp():
+    exp_id = 0
     for i in range(10):
         workload = []
         workload += workload_envs[exp_id]
         workload[-1] += script_paths[exp_id]
-        workload[-1] +=  f' {(i+1)*10}'
+        workload[-1] += f' {(i+1)*10}'
         exp_name = experiments[0] + f'_{(i+1)*10}'
         out_path = output_paths[1]
         os.makedirs(out_path, exist_ok=True)
         run_experiment(20, out_path, exp_name, workload)
 
 
+def compare_exp():
+    workload = []
+    workload += workload_envs[0]
+    workload[-1] += script_paths[0]
+    exp_name = experiments[0]
+    out_path = output_paths[1]
+    os.makedirs(out_path, exist_ok=True)
+    run_experiment(20, out_path, exp_name, workload)
+    workload = []
+    workload += workload_envs[1]
+    workload[-1] += script_paths[1]
+    exp_name = experiments[1]
+    out_path = output_paths[1]
+    run_experiment(20, out_path, exp_name, workload)
+
+
+
 experiments = ['keras', 'pytorch', 'sleep', 'stress', 'sleep_summary', 'sleep_summary_r']
 workload_envs = [['bash',  '-c', 'source /home/nils/miniconda3/bin/activate tf && python3 '],
                 ['bash', '-c', 'source /home/nils/miniconda3/bin/activate pytorch && python3 ']]
 script_paths = ['MNIST_CNN/keras_mnist.py', 'MNIST_CNN/pytorch_mnist.py']
-output_paths = ["dump/", "MNIST_CNN/5/", 'sleep/2/', 'stress/', 'pinpoint_testing/', 'dump2/']
+output_paths = ["dump/", "MNIST_CNN/6/", 'sleep/2/', 'stress/', 'pinpoint_testing/', 'dump2/']
 
 exp_id = 3
 reps = 20
@@ -53,5 +71,6 @@ os.makedirs(out_path, exist_ok=True)
 #         pass
 
 # data_amount_exp()
-run_experiment(reps, out_path, exp_name, workload)
+compare_exp()
+# run_experiment(reps, out_path, exp_name, workload)
 

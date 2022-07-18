@@ -23,7 +23,7 @@ train_loader = torch.utils.data.DataLoader(datasets.MNIST('./MNIST_CNN/mnist_dat
                                                           train=True,
                                                           transform=transforms.Compose([
                                                               transforms.ToTensor(), # first, convert image to PyTorch tensor
-                                                              # transforms.Normalize((0.1307,), (0.3081,)) # normalize inputs
+                                                              transforms.Normalize((0.1307,), (0.3081,)) # normalize inputs
                                                           ])), 
                                            batch_size=batch_size, 
                                            shuffle=True)
@@ -34,7 +34,7 @@ test_loader = torch.utils.data.DataLoader(datasets.MNIST('./MNIST_CNN/mnist_data
                                                           train=False,
                                                           transform=transforms.Compose([
                                                               transforms.ToTensor(), # first, convert image to PyTorch tensor
-                                                              # transforms.Normalize((0.1307,), (0.3081,)) # normalize inputs
+                                                              transforms.Normalize((0.1307,), (0.3081,)) # normalize inputs
                                                           ])), 
                                            batch_size=batch_size, 
                                            shuffle=True)
