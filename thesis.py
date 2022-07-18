@@ -17,11 +17,8 @@ class ExperimentData:
 
     def set_energy_data(self, path, offset, interval=50):
         self.watts = read_watts(path, self.name, self.reps)
-        print(self.watts)
         self.energy = energy_from_watts(self.watts, offset, interval)
-        print(self.energy)
         self.energy_avg = np.average(self.energy, axis=0)
-        print(self.energy_avg)
         self.energy_std = 100 * np.std(self.energy, axis=0)/self.energy_avg
 
 
@@ -32,28 +29,9 @@ def read_watts(path, file_name, reps):
     return watts
 
 def energy_from_watts(watts, offset, interval):
-    # energy_sum = np.asarray([np.sum(x[offset+1:-offset]/1000, axis=0) * (interval/1000) for x in watts])
-    energy_sum = np.asarray([np.sum(x[offset+1:-offset], axis=0)/(1000000/interval) for x in watts])
+    energy_sum = np.asarray([np.sum(x[offset+1:-offset]/1000, axis=0) * (interval/1000) for x in watts])
+    # energy_sum = np.asarray([np.sum(x[offset+1:-offset], axis=0)/(1000000/interval) for x in watts])
     return energy_sum
-
-
-def plot_watts(title, titles, watts, reps, offset):
-    fig, axs = plt.subplots(2, 2, sharex='all', sharey='all')
-    fig.suptitle(title)
-    l = []
-    for j in range(4):
-        index = [int(x) for x in f"{j:02b}"]
-        for i in range(reps):
-            l.append(axs[index[0], index[1]].plot(watts[i][:, j]))
-            axs[index[0], index[1]].set_title(titles[j])
-        axs[index[0], index[1]].axvline(offset)
-        axs[index[0], index[1]].axvline(max([len(x) for x in watts])-offset)
-    for a in fig.axes:
-        a.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True)
-        a.tick_params(axis='y', which='both', bottom=True, top=False, labelleft=True)
-    fig.text(0.5, 0.04, 'Sample number', ha='center', va='center')
-    fig.text(0.06, 0.5, 'Power level in mW', ha='center', va='center', rotation='vertical')
-    # fig.legend(l, labels=[f"Run {i}" for i in range(20)], loc="right")
 
 
 def fig_data_prep():
@@ -71,10 +49,16 @@ def fig_data_prep():
     plt.xlabel('Time [s]')
     plt.ylabel('Power draw [W]')
     plt.legend()
-    plt.savefig('fig_data_prep.pdf', dpi=1000, format='pdf')
-        
+    plt.savefig('figures/fig_data_prep.pdf', dpi=1000, format='pdf')
+
+
+def idle_energy():
+    sleep = ExperimentData('sleep', 20)
+    sleep.set_energy_data('sleep/2/', 200, 100)
+    print(sleep.energy_avg)
+    print(sleep.energy_std)
+    
     
 
-
 fig_data_prep()
-# plt.show()
+plt.show()

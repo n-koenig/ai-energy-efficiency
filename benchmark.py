@@ -36,13 +36,13 @@ workload_envs = [['bash',  '-c', 'source /home/nils/miniconda3/bin/activate tf &
 script_paths = ['MNIST_CNN/keras_mnist.py', 'MNIST_CNN/pytorch_mnist.py']
 output_paths = ["dump/", "MNIST_CNN/5/", 'sleep/2/', 'stress/', 'pinpoint_testing/', 'dump2/']
 
-exp_id = 0
-reps = 1
-out_path = output_paths[-1]
+exp_id = 3
+reps = 20
+out_path = output_paths[2]
 exp_name = experiments[exp_id]
 # workload = workload_envs[exp_id]
 # workload[-1] += script_paths[exp_id]
-# workload = ['sleep', '10']
+workload = ['sleep', '10']
 # workload = ['stress', '--cpu',  '8', '--io', '4', '--vm', '20', '--vm-bytes', '128M', '--timeout', '10s', '-q']
 
 os.makedirs(out_path, exist_ok=True)
@@ -52,5 +52,6 @@ os.makedirs(out_path, exist_ok=True)
 #     else:
 #         pass
 
-data_amount_exp()
+# data_amount_exp()
+run_experiment(reps, out_path, exp_name, workload)
 

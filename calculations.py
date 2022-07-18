@@ -353,10 +353,16 @@ pytorch_test_2.print_data()
 print("-----------------------------------------------------")
 
 
+sleep = ExperimentData('sleep', 20)
+sleep.set_energy_data('sleep/2/', 2, 100)
+plot_watts('Sleep', titles, sleep.watts, 20, 200)
+
+
+
 # test.print_data()
 
 # eval_pinpoint_exp()
-eval_data_load_exp(keras_data_loads)
+# eval_data_load_exp(keras_data_loads)
 
 # efficiency_test(keras_data_loads, pytorch_data)
 
