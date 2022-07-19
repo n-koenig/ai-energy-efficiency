@@ -48,19 +48,21 @@ def compare_exp():
 
 
 
-experiments = ['keras', 'pytorch', 'sleep', 'stress', 'sleep_summary', 'sleep_summary_r']
+experiments = ['keras', 'pytorch', 'sleep', 'stress', 'sleep_summary', 'sleep_summary_r', 'keras_51200']
 workload_envs = [['bash',  '-c', 'source /home/nils/miniconda3/bin/activate tf && python3 '],
                 ['bash', '-c', 'source /home/nils/miniconda3/bin/activate pytorch && python3 ']]
 script_paths = ['MNIST_CNN/keras_mnist.py', 'MNIST_CNN/pytorch_mnist.py']
-output_paths = ["dump/", "MNIST_CNN/6/", 'sleep/2/', 'stress/', 'pinpoint_testing/', 'dump2/']
+output_paths = ["dump/", "MNIST_CNN/6/", 'sleep/2/', 'stress/', 'pinpoint_testing/', 'dump2/', 'batch_test/2/']
 
-exp_id = 3
+exp_id = 0
 reps = 20
-out_path = output_paths[2]
+out_path = output_paths[6]
 exp_name = experiments[exp_id]
-# workload = workload_envs[exp_id]
-# workload[-1] += script_paths[exp_id]
-workload = ['sleep', '10']
+exp_name = 'keras_51200'
+workload = workload_envs[exp_id]
+workload[-1] += script_paths[exp_id]
+workload[-1] += ' 51200'
+# workload = ['sleep', '10']
 # workload = ['stress', '--cpu',  '8', '--io', '4', '--vm', '20', '--vm-bytes', '128M', '--timeout', '10s', '-q']
 
 os.makedirs(out_path, exist_ok=True)
@@ -71,6 +73,6 @@ os.makedirs(out_path, exist_ok=True)
 #         pass
 
 # data_amount_exp()
-compare_exp()
-# run_experiment(reps, out_path, exp_name, workload)
+# compare_exp()
+run_experiment(reps, out_path, exp_name, workload)
 

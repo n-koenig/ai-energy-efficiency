@@ -40,7 +40,7 @@ img_rows, img_cols = 28, 28
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
 argument = parser.parse_args().train_data_amount
-train_amount =  int(argument * len(x_train) / 100)
+train_amount = argument # int(argument * len(x_train) / 100)
 (x_train, y_train) = (x_train[:train_amount], y_train[:train_amount])
 # print(x_train.shape)
 

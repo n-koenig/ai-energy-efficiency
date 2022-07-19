@@ -357,6 +357,12 @@ sleep = ExperimentData('sleep', 20)
 sleep.set_energy_data('sleep/2/', 2, 100)
 plot_watts('Sleep', titles, sleep.watts, 20, 200)
 
+batch = ExperimentData('keras_51200', 20)
+batch.set_energy_data('batch_test/1/', 200, 100)
+
+plot_watts('Batch', titles, batch.watts, 20, 200)
+plot_avg_watts('Batch', batch.watts, 200)
+
 
 
 # test.print_data()
