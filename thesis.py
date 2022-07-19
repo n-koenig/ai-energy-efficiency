@@ -83,7 +83,7 @@ def fig_data_prep():
     plt.xlabel('Time [s]')
     plt.ylabel('Power draw [W]')
     plt.legend()
-    plt.savefig('figures/fig_data_prep.pdf', dpi=1000, format='pdf')
+    plt.savefig('figures/preprocessing.pdf', dpi=1000, format='pdf')
 
 
 def idle_power():
@@ -147,8 +147,8 @@ def eval_compare():
         l.append(axs[index[0], index[1]].plot(y, label='average'))
         axs[index[0], index[1]].fill_between(x, y-error, y+error, color='green', alpha=0.2, label='standard\ndeviation')
         axs[index[0], index[1]].set_title(titles[i])
-        axs[index[0], index[1]].axvline(keras.offset)
-        axs[index[0], index[1]].axvline(len(y)-keras.offset)
+        axs[index[0], index[1]].axvline(keras.offset, color='r')
+        axs[index[0], index[1]].axvline(len(y)-keras.offset, color='r')
         if index[0]: 
             axs[index[0], index[1]].set_xlabel('Time [s]')
         if not index[1]: 
@@ -232,14 +232,14 @@ def eval_data():
     print(table)
 
     plt.figure()
-    plt.title('Average energy consumption')
+    plt.title('Average Energy Consumption')
     labels = [f'{i*6}' for i in range(1, 11, 1)]
     plt.xlabel('Number of training samples [n*1000]')
     plt.ylabel('Energy consumption [J]')
     plt.bar(labels, energy_gpu, label="GPU")
     plt.bar(labels, energy_cpu, bottom=energy_gpu, label="CPU")
     plt.legend()
-    plt.savefig('figures/data_energy.pdf', format='pdf')
+    # plt.savefig('figures/data_energy.pdf', format='pdf')
 
     plt.figure()
     def func(x, a, b):
@@ -247,16 +247,85 @@ def eval_data():
     popt, pcov = optimize.curve_fit(func, energy_total, acc)
     plt.scatter(energy_total, acc)
     plt.plot(energy_total, func(energy_total, *popt))
-    plt.title('Average energy consumption and accuracy')
+    plt.title('Average Accuracy')
     plt.xlabel('Energy consumption [J]')
     plt.ylabel('Accuracy [%]')
     plt.ylim((0, 100))
-    plt.savefig('figures/data_acc.pdf', format='pdf')
+    # plt.savefig('figures/data_acc.pdf', format='pdf')
 
     # plt.figure()
+    # plt.title('GPU Power Draw')
+    # plt.plot(data[0].watts[0][:, 0]/1000, label=f'Run {0}')
+    # plt.plot(data[3].watts[0][:, 0]/1000, label=f'Run {3}')
+    # plt.plot(data[6].watts[0][:, 0]/1000, label=f'Run {6}')
+    # plt.plot(data[9].watts[0][:, 0]/1000, label=f'Run {9}')
+    # # plt.axvline(x=200, color='r')
+    # # plt.axvline(x=np.average([len(x) for x in data.watts])-200, color='r')
+    # x = np.linspace(0, 60, 7, dtype=np.int16)
+    # plt.xticks(10*x, x)
+    # plt.xlabel('Time [s]')
+    # plt.ylabel('Power draw [W]')
+    # plt.legend()
+    # plt.savefig('figures/data_power.pdf', dpi=1000, format='pdf')
+
+
+    for i in range(10):
+        plt.figure()
+        # fig, axs = plt.subplots(2, 2, sharex='col', sharey='all')
+        # fig.suptitle('Average Power Draw')
+        # l = list()
+        arr = []
+        arr.append([x[:, 0] for x in data[i].watts])
+        arr.append([x[:, 2] for x in data[i].watts])
+        y, error = tolerant_mean(arr[0])
+        x = np.linspace(0, y.shape[0]-1, y.shape[0])
+        plt.plot(y, label='GPU')
+        plt.fill_between(x, y-error, y+error, color='green', alpha=0.2)
+        plt.title('Average GPU and CPU Power Draw')
+        plt.axvline(data[i].offset, color='r')
+        plt.axvline(len(y)-data[i].offset, color='r')
+        y, error = tolerant_mean(arr[1])
+        x = np.linspace(0, y.shape[0]-1, y.shape[0])
+        plt.plot(y, label='CPU')
+        plt.fill_between(x, y-error, y+error, color='green', alpha=0.2, label='standard\ndeviation')
+        plt.savefig(f'figures/data_{(i+1)*10}_watts.pdf', dpi=1000, format='pdf')
+        if i == 0:
+            plt.legend()
+            plt.savefig(f'figures/data_{(i+1)*10}_watts_legend.pdf', dpi=1000, format='pdf')
+        if i == 7:
+            plt.legend()
+            plt.savefig(f'figures/data_{(i+1)*10}_watts_legend.pdf', dpi=1000, format='pdf')
+            
+        
+        
+        
+        
+        # for i in range(4):
+        #     y, error = tolerant_mean(arr[i])
+        #     x = np.linspace(0, y.shape[0]-1, y.shape[0])
+        #     index = [int(x) for x in f"{i:02b}"]
+        #     l.append(axs[index[0], index[1]].plot(y, label='average'))
+        #     axs[index[0], index[1]].fill_between(x, y-error, y+error, color='green', alpha=0.2, label='standard\ndeviation')
+        #     axs[index[0], index[1]].set_title(titles[i])
+        #     axs[index[0], index[1]].axvline(keras.offset, color='r')
+        #     axs[index[0], index[1]].axvline(len(y)-keras.offset, color='r')
+        #     if index[0]: 
+        #         axs[index[0], index[1]].set_xlabel('Time [s]')
+        #     if not index[1]: 
+        #         axs[index[0], index[1]].set_ylabel('Power Draw [W]')
+        #         x = np.linspace(0, 100, 6, dtype=np.int16)
+        #         axs[index[0], index[1]].set_xticks(20*x, x)
+        #     else:
+        #         x = np.linspace(0, 140, 8, dtype=np.int16)
+        #         axs[index[0], index[1]].set_xticks(20*x, x)
+        # for a in fig.axes:
+        #     a.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True)
+        #     a.tick_params(axis='y', which='both', bottom=True, top=False, labelleft=True)
+        # fig.tight_layout()
+        # plt.savefig(f'figures/data_{(i+1)*10}_watts.pdf', dpi=1000, format='pdf')
 
 
 # fig_data_prep()
-eval_compare()
+# eval_compare()
 eval_data()
 plt.show()
