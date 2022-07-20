@@ -300,12 +300,12 @@ def efficiency_test(keras_data_loads, pytorch_data):
 
 
 
-paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'pinpoint_testing/', 'test/', 'MNIST_CNN/4/', 'MNIST_CNN/5/']
+paths = ['dump/', 'MNIST_CNN/1/', 'MNIST_CNN/2/', 'MNIST_CNN/3/', 'sleep/1/', 'stress/', 'pinpoint_testing/', 'test/', 'MNIST_CNN/4/', 'MNIST_CNN/5/', 'MNIST_CNN/6/']
 titles = ['nvml:nvidia_geforce_gtx_970_0', 'rapl:ram', 'rapl:cores', 'rapl:pkg']
 
 keras_data = ExperimentData('keras', 20)
-keras_data.set_energy_data(paths[2], 180)
-keras_data.set_acc_data(paths[2], 12)
+keras_data.set_energy_data(paths[10], 180)
+keras_data.set_acc_data(paths[10], 12)
 keras_data.set_efficiency_data()
 
 pytorch_data = ExperimentData('pytorch', 20)

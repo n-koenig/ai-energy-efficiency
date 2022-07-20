@@ -94,11 +94,11 @@ def idle_power():
 
 
 def eval_compare():
-    path = 'MNIST_CNN/2/'
+    path = 'MNIST_CNN/6/'
     titles = ['Keras GPU', 'PyTorch GPU', 'Keras CPU', 'PyTorch CPU']
     reps = 20
-    offset = 8000
-    interval = 50
+    offset = 20000
+    interval = 100
     
     keras = ExperimentData('keras', reps, offset, interval)
     keras.watts = read_watts(path, keras.name, keras.reps)
@@ -131,6 +131,11 @@ def eval_compare():
     print(pytorch.accs, 100*pytorch.acc_avg, pytorch.acc_std)
     print(f'Keras & {keras.energy_avg[0] + keras.energy_avg[2]:,.2f} & {100*keras.acc_avg:.2f} \\\ \nPyTorch & {pytorch.energy_avg[0] + pytorch.energy_avg[2]:,.2f} & {100*pytorch.acc_avg:.2f}')
 
+    table = ''
+    table += f'Keras & ${keras.energy_avg[0]:,.0f}$ & ${keras.energy_avg[2]:,.0f}$ & ${keras.energy_avg[0] + keras.energy_avg[2]:,.0f}$ & ${100*keras.acc_avg:.2f}$ \\\ \n'
+    table += f'Pytorch & ${pytorch.energy_avg[0]:,.0f}$ & ${pytorch.energy_avg[2]:,.0f}$ & ${pytorch.energy_avg[0] + pytorch.energy_avg[2]:,.0f}$ & ${100*pytorch.acc_avg:.2f}$ \\\ \n'
+    print(table)
+
     fig, axs = plt.subplots(2, 2, sharex='col', sharey='all')
     # fig.suptitle('Average Power Draw')
     l = list()
@@ -153,10 +158,10 @@ def eval_compare():
             axs[index[0], index[1]].set_xlabel('Time [s]')
         if not index[1]: 
             axs[index[0], index[1]].set_ylabel('Power Draw [W]')
-            x = np.linspace(0, 100, 6, dtype=np.int16)
+            x = np.linspace(0, 50, 6, dtype=np.int16)
             axs[index[0], index[1]].set_xticks(20*x, x)
         else:
-            x = np.linspace(0, 140, 8, dtype=np.int16)
+            x = np.linspace(0, 80, 9, dtype=np.int16)
             axs[index[0], index[1]].set_xticks(20*x, x)
     for a in fig.axes:
         a.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True)
@@ -197,10 +202,10 @@ def eval_compare():
     
 
 def eval_data():
-    def print_table(energy_total, acc):
+    def print_table(energy_total, energy_gpu, energy_cpu, acc):
         table = ''
         for i in range(10):
-            table += f'{(i+1)*6000} & {energy_total[i]:,.2f} & {acc[i]:.2f} \\\ \n'
+            table += f'${(i+1)*6000:,}$ & ${energy_gpu[i]:,.0f}$ & ${energy_cpu[i]:,.0f}$ & ${energy_total[i]:,.0f}$ & ${acc[i]:.2f}$ \\\ \n'
         print(table)
 
     def plot_energy(energy_gpu, energy_cpu):
@@ -370,8 +375,8 @@ def eval_data():
         plt.xticks(np.linspace(6000, 60000, 10))
         plt.plot(x, eff_1[0], color='b', label='x=1')
         plt.scatter(x, eff_1[0], color='b')
-        plt.plot(x, eff_1[5], color='r', label='x=6')
-        plt.scatter(x, eff_1[5], color='r')
+        plt.plot(x, eff_1[6], color='r', label='x=6')
+        plt.scatter(x, eff_1[6], color='r')
         plt.plot(x, eff_1[9], color='y', label='x=10')
         plt.scatter(x, eff_1[9], color='y')
         plt.legend()
@@ -477,16 +482,16 @@ def eval_data():
         energy_total.append(data[i].energy_avg[0] + data[i].energy_avg[2])
         acc.append(100*data[i].acc_avg)
 
-    # print_table(energy_total, acc)
+    print_table(energy_total, energy_gpu, energy_cpu, acc)
     # plot_example_power(data)
     # plot_power(data)
     # plot_acc(energy_total, acc)
     # plot_energy(energy_gpu, energy_cpu)
     # plot_diff(energy_total, acc)
     # test_eff(energy_total, acc)
-    plot_eff(energy_total, acc)
+    # plot_eff(energy_total, acc)
 
 # fig_data_prep()
-# eval_compare()
-eval_data()
+eval_compare()
+# eval_data()
 plt.show()

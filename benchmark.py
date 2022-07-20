@@ -13,6 +13,7 @@ def run_experiment(reps, out_path, exp_name, workload):
             command += ['--header']
             command += ['--']
             command += workload
+            print(command)
             r = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=f)
             output, errs = r.communicate()
             # print(output)
@@ -35,6 +36,7 @@ def compare_exp():
     workload = []
     workload += workload_envs[0]
     workload[-1] += script_paths[0]
+    workload[-1] += ' 100'
     exp_name = experiments[0]
     out_path = output_paths[1]
     os.makedirs(out_path, exist_ok=True)
@@ -44,6 +46,8 @@ def compare_exp():
     workload[-1] += script_paths[1]
     exp_name = experiments[1]
     out_path = output_paths[1]
+    with open(f"log_{exp_name}.csv", "w") as f:
+        f.write("epoch,accuracy,loss,val_accuracy,val_loss\n")
     run_experiment(20, out_path, exp_name, workload)
 
 
@@ -54,18 +58,18 @@ workload_envs = [['bash',  '-c', 'source /home/nils/miniconda3/bin/activate tf &
 script_paths = ['MNIST_CNN/keras_mnist.py', 'MNIST_CNN/pytorch_mnist.py']
 output_paths = ["dump/", "MNIST_CNN/6/", 'sleep/2/', 'stress/', 'pinpoint_testing/', 'dump2/', 'batch_test/2/']
 
-exp_id = 0
-reps = 20
-out_path = output_paths[6]
-exp_name = experiments[exp_id]
-exp_name = 'keras_51200'
-workload = workload_envs[exp_id]
-workload[-1] += script_paths[exp_id]
-workload[-1] += ' 51200'
+# exp_id = 0
+# reps = 20
+# out_path = output_paths[6]
+# exp_name = experiments[exp_id]
+# exp_name = 'keras_51200'
+# workload = workload_envs[exp_id]
+# workload[-1] += script_paths[exp_id]
+# workload[-1] += ' 51200'
 # workload = ['sleep', '10']
 # workload = ['stress', '--cpu',  '8', '--io', '4', '--vm', '20', '--vm-bytes', '128M', '--timeout', '10s', '-q']
 
-os.makedirs(out_path, exist_ok=True)
+# os.makedirs(out_path, exist_ok=True)
 # with open(f"log_{exp_name}.csv", "w") as f:
 #     if exp_id == 1:
 #         f.write("epoch,accuracy,loss,val_accuracy,val_loss\n")
@@ -73,6 +77,6 @@ os.makedirs(out_path, exist_ok=True)
 #         pass
 
 # data_amount_exp()
-# compare_exp()
-run_experiment(reps, out_path, exp_name, workload)
+compare_exp()
+# run_experiment(reps, out_path, exp_name, workload)
 

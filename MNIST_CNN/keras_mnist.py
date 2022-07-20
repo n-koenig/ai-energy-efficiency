@@ -29,9 +29,9 @@ epochs = 12
 parser = argparse.ArgumentParser(description='Provide amount of training data to be used')
 parser.add_argument('train_data_amount', type=int, metavar='N', help='specify amount of training data to be used, in N percent of total training data', default=100)
 
-np.random.seed(123)
-random.seed(123)
-tf.random.set_seed(1234)
+np.random.seed(0)
+random.seed(0)
+tf.random.set_seed(0)
 
 # input image dimensions
 img_rows, img_cols = 28, 28
@@ -40,7 +40,7 @@ img_rows, img_cols = 28, 28
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
 argument = parser.parse_args().train_data_amount
-train_amount = argument # int(argument * len(x_train) / 100)
+train_amount = int(argument * len(x_train) / 100)
 (x_train, y_train) = (x_train[:train_amount], y_train[:train_amount])
 # print(x_train.shape)
 

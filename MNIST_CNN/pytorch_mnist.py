@@ -12,10 +12,16 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
+import numpy as np
+import random
 
 batch_size = 128
 num_classes = 10
 epochs = 12
+
+torch.manual_seed(0)
+np.random.seed(0)
+random.seed(0)
 
 # download and transform train dataset
 train_loader = torch.utils.data.DataLoader(datasets.MNIST('./MNIST_CNN/mnist_data', 
@@ -66,7 +72,7 @@ class CNNClassifier(nn.Module):
 # create classifier and optimizer objects
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 clf = CNNClassifier().to(device)
-opt = optim.Adadelta(clf.parameters(), lr=0.1, rho=0.95, eps=1e-07)
+opt = optim.Adadelta(clf.parameters(), lr=0.01, rho=0.95, eps=1e-07)
 
 loss_history = []
 acc_history = []
