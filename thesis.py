@@ -220,6 +220,7 @@ def eval_data():
         def func(x, a, b):
             return a * np.log(x) + b
         popt, pcov = optimize.curve_fit(func, energy_total, acc)
+        print(popt)
         plt.scatter(energy_total, acc)
         plt.plot(energy_total, func(energy_total, *popt))
         # plt.title('Average Accuracy')
@@ -307,7 +308,7 @@ def eval_data():
         plt.figure()
         plt.xticks(np.linspace(6000, 60000, 10))
         plt.xlabel('Amount of training samples')
-        plt.ylabel('Efficiency [%/J]')
+        plt.ylabel('Linear Efficiency [%/J]')
         plt.scatter(x, eff_1, color='r')
         plt.plot(x, eff_1, color='r')
         plt.savefig('figures/data_eff_lin.pdf', dpi=1000, format='pdf')
@@ -353,45 +354,98 @@ def eval_data():
         plt.plot(x, eff_4)
         plt.savefig('figures/data_eff_alt_norm.pdf', dpi=1000, format='pdf')
 
+        eff_1 = []
+        acc_frac = [x/100 for x in acc]
+        for i in range(10):
+            scale = (1000/(2**(i)))
+            print(scale)
+            eff = []
+            for j in range(10):
+                eff.append(scale*np.exp((i+1)*acc_frac[j])/energy_total[j])
+            eff_1.append(eff)
+        
+        plt.figure()
+        plt.xlabel('Amount of training samples')
+        plt.ylabel('Logarithmic Efficiency [%/J]')
+        plt.xticks(np.linspace(6000, 60000, 10))
+        plt.plot(x, eff_1[0], color='b', label='x=0')
+        plt.scatter(x, eff_1[0], color='b')
+        plt.plot(x, eff_1[5], color='r', label='x=5')
+        plt.scatter(x, eff_1[5], color='r')
+        plt.plot(x, eff_1[9], color='y', label='x=9')
+        plt.scatter(x, eff_1[9], color='y')
+        plt.legend()
+        plt.savefig('figures/data_eff_log.pdf', dpi=1000, format='pdf')
+
 
 
     def test_eff(energy_total, acc):
+        eff_1 = []
+        acc_frac = [x/100 for x in acc]
+        for i in range(10):
+            scale = (1000/(2**(i)))
+            print(scale)
+            eff = []
+            for j in range(10):
+                eff.append(scale*np.exp((i+1)*acc_frac[j])/energy_total[j])
+            eff_1.append(eff)
+        
+
+        plt.figure()
+        # plt.semilogy(base=2)
+        for i in range(0, 10, 4):
+            print(i)
+            # eff_1[i] = (eff_1[i] - np.min(eff_1[i])) / (np.max(eff_1[i]) - np.min(eff_1[i]))
+            # print(f'eff{i}: {eff_1[i]}\n')
+            plt.plot(eff_1[i])
+        
+        
         eff_1 = []
         eff_2 = []
         eff_3 = []
         acc_1 = []
         acc_2 = []
+        acc_3 = []
         x=10
         for i in range(10):
-            eff_1.append(100*acc[i]/energy_total[i])
-            acc_1.append(acc[i]/((100-acc[i])))
-            eff_2.append(100*acc_1[i]/energy_total[i])
-            acc_2.append(acc[i]/((100-acc[i])**3))
-            eff_3.append(100*acc_2[i]/energy_total[i])
+            # eff_1.append(100*acc[i]/energy_total[i])
+            # acc_1.append(acc[i]/((100-acc[i])))
+            # eff_2.append(100*acc_1[i]/energy_total[i])
+            # acc_2.append(acc[i]/((100-acc[i])**3))
+            # eff_3.append(100*acc_2[i]/energy_total[i])
+            acc[i] /= 100
+            acc_1.append(1000*np.exp(1*acc[i]))
+            acc_2.append(500*np.exp(2*acc[i]))
+            acc_3.append(250*np.exp(3*acc[i]))
+            eff_1.append(acc_1[i]/energy_total[i])
+            eff_2.append(acc_2[i]/energy_total[i])
+            eff_3.append(acc_3[i]/energy_total[i])
+
             
             
-        print(energy_total)
-        print(acc)
-        print(eff_1)
-        print(np.linspace(1, 10, 10))
+        # print(energy_total)
+        # print(acc)
+        # print(eff_1)
+        # print(eff_2)
+        # print(eff_3)
+        # print(np.linspace(1, 10, 10))
 
         plt.figure()
+        # plt.yscale('log')
         plt.scatter(np.linspace(1, 10, 10), eff_1)
-
-        plt.figure()
+        # plt.figure()
         plt.scatter(np.linspace(1, 10, 10), eff_2)
-
-        plt.figure()
+        # plt.figure()
         plt.scatter(np.linspace(1, 10, 10), eff_3)
 
-        plt.figure()
-        plt.scatter(np.linspace(1, 10, 10), acc)
+        # plt.figure()
+        # plt.scatter(np.linspace(1, 10, 10), acc_1)
 
-        plt.figure()
-        plt.scatter(np.linspace(1, 10, 10), acc_1)
+        # plt.figure()
+        # plt.scatter(np.linspace(1, 10, 10), acc_2)
 
-        plt.figure()
-        plt.scatter(np.linspace(1, 10, 10), acc_2)
+        # plt.figure()
+        # plt.scatter(np.linspace(1, 10, 10), acc_3)
 
 
     path = 'MNIST_CNN/4/'
@@ -423,16 +477,16 @@ def eval_data():
         energy_total.append(data[i].energy_avg[0] + data[i].energy_avg[2])
         acc.append(100*data[i].acc_avg)
 
-    print_table(energy_total, acc)
-    plot_example_power(data)
-    plot_power(data)
-    plot_acc(energy_total, acc)
-    plot_energy(energy_gpu, energy_cpu)
-    plot_diff(energy_total, acc)
-    test_eff(energy_total, acc)
+    # print_table(energy_total, acc)
+    # plot_example_power(data)
+    # plot_power(data)
+    # plot_acc(energy_total, acc)
+    # plot_energy(energy_gpu, energy_cpu)
+    # plot_diff(energy_total, acc)
+    # test_eff(energy_total, acc)
     plot_eff(energy_total, acc)
 
-fig_data_prep()
-eval_compare()
+# fig_data_prep()
+# eval_compare()
 eval_data()
 plt.show()
