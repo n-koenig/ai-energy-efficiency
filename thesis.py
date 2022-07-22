@@ -75,10 +75,13 @@ def fig_data_prep():
     plt.figure()
     # plt.title('GPU Power Draw')
     for i in range(3):
-        plt.plot(data.watts[i][:, 0]/1000, label=f'Run {i}')
-    plt.axvline(x=200, color='r')
-    plt.axvline(x=np.average([len(x) for x in data.watts])-200, color='r')
-    x = np.linspace(0, 60, 7, dtype=np.int16)
+        plt.plot(data.watts[i][:, 0]/1000, label=f'Run {i+1}')
+    plt.axvline(x=200, linestyle='dashed', color='r')
+    plt.axvline(x=np.average([len(x) for x in data.watts])-200, linestyle='dashed', color='r')
+    time = len(data.watts[2])
+    time2 = time/(1000/100)
+    time2= np.round(time2/10)*10
+    x = np.linspace(0, time2, int(time2/10)+1, dtype=np.int16)
     plt.xticks(10*x, x)
     plt.xlabel('Time [s]')
     plt.ylabel('Power draw [W]')
@@ -130,16 +133,14 @@ def eval_compare():
     print(keras.accs, 100*keras.acc_avg, keras.acc_std)
     print(pytorch.accs, 100*pytorch.acc_avg, pytorch.acc_std)
     print(f'Keras & {keras.energy_avg[0] + keras.energy_avg[2]:,.2f} & {100*keras.acc_avg:.2f} \\\ \nPyTorch & {pytorch.energy_avg[0] + pytorch.energy_avg[2]:,.2f} & {100*pytorch.acc_avg:.2f}')
-
-    table = ''
-    table += f'Keras & ${keras.energy_avg[0]:,.0f}$ & ${keras.energy_avg[2]:,.0f}$ & ${keras.energy_avg[0] + keras.energy_avg[2]:,.0f}$ & ${100*keras.acc_avg:.2f}$ \\\ \n'
-    table += f'Pytorch & ${pytorch.energy_avg[0]:,.0f}$ & ${pytorch.energy_avg[2]:,.0f}$ & ${pytorch.energy_avg[0] + pytorch.energy_avg[2]:,.0f}$ & ${100*pytorch.acc_avg:.2f}$ \\\ \n'
-    print(table)
+    
+    
 
     fig, axs = plt.subplots(2, 2, sharex='col', sharey='all')
     # fig.suptitle('Average Power Draw')
     l = list()
     
+    times = []
     arr = []
     arr.append([x[:, 0] for x in keras.watts])
     arr.append([x[:, 0] for x in pytorch.watts])
@@ -147,28 +148,33 @@ def eval_compare():
     arr.append([x[:, 2] for x in pytorch.watts])
     for i in range(4):
         y, error = tolerant_mean(arr[i])
+        times.append(len(y))
         x = np.linspace(0, y.shape[0]-1, y.shape[0])
         index = [int(x) for x in f"{i:02b}"]
         l.append(axs[index[0], index[1]].plot(y, label='average'))
         axs[index[0], index[1]].fill_between(x, y-error, y+error, color='green', alpha=0.2, label='standard\ndeviation')
         axs[index[0], index[1]].set_title(titles[i])
-        axs[index[0], index[1]].axvline(keras.offset, color='r')
-        axs[index[0], index[1]].axvline(len(y)-keras.offset, color='r')
+        axs[index[0], index[1]].axvline(keras.offset, color='r', linestyle='dashed')
+        axs[index[0], index[1]].axvline(len(y)-keras.offset, color='r', linestyle='dashed')
         if index[0]: 
             axs[index[0], index[1]].set_xlabel('Time [s]')
         if not index[1]: 
             axs[index[0], index[1]].set_ylabel('Power Draw [W]')
-            x = np.linspace(0, 50, 6, dtype=np.int16)
-            axs[index[0], index[1]].set_xticks(20*x, x)
+            x = np.linspace(0, 100, 6, dtype=np.int16)
+            axs[index[0], index[1]].set_xticks(10*x, x)
         else:
-            x = np.linspace(0, 80, 9, dtype=np.int16)
-            axs[index[0], index[1]].set_xticks(20*x, x)
+            x = np.linspace(0, 150, 6, dtype=np.int16)
+            axs[index[0], index[1]].set_xticks(10*x, x)
     for a in fig.axes:
         a.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True)
         a.tick_params(axis='y', which='both', bottom=True, top=False, labelleft=True)
     fig.tight_layout()
     plt.savefig('figures/compare_watts.pdf', dpi=1000, format='pdf')
 
+    table = ''
+    table += f'Keras & ${keras.energy_avg[0]:,.0f}$ & ${keras.energy_avg[2]:,.0f}$ & ${keras.energy_avg[0] + keras.energy_avg[2]:,.0f}$ & ${100*keras.acc_avg:.2f}$ & ${(times[0]-(2*offset/interval))/(1000/interval):.0f}$\\\ \n'
+    table += f'Pytorch & ${pytorch.energy_avg[0]:,.0f}$ & ${pytorch.energy_avg[2]:,.0f}$ & ${pytorch.energy_avg[0] + pytorch.energy_avg[2]:,.0f}$ & ${100*pytorch.acc_avg:.2f}$ & ${(times[1]-2*offset/interval)/(1000/interval):.0f}$\\\ \n'
+    print(table)
 
     # fig, axs = plt.subplots(1, 2, sharex='all', sharey='all')
     # fig.suptitle('Average Power Draw')
@@ -205,7 +211,10 @@ def eval_data():
     def print_table(energy_total, energy_gpu, energy_cpu, acc):
         table = ''
         for i in range(10):
-            table += f'${(i+1)*6000:,}$ & ${energy_gpu[i]:,.0f}$ & ${energy_cpu[i]:,.0f}$ & ${energy_total[i]:,.0f}$ & ${acc[i]:.2f}$ \\\ \n'
+            arr = [x[:, 0] for x in data[i].watts]
+            y, error = tolerant_mean(arr)
+            time = len(y)
+            table += f'${(i+1)*6000:,}$ & ${energy_gpu[i]:,.0f}$ & ${energy_cpu[i]:,.0f}$ & ${energy_total[i]:,.0f}$ & ${acc[i]:.2f}$ & ${(time-(2*offset/interval))/(1000/interval):.0f}$\\\ \n'
         print(table)
 
     def plot_energy(energy_gpu, energy_cpu):
@@ -261,12 +270,19 @@ def eval_data():
             plt.plot(y, label='GPU')
             plt.fill_between(x, y-error, y+error, color='green', alpha=0.2)
             # plt.title('Average GPU and CPU Power Draw')
-            plt.axvline(data[i].offset, color='r')
-            plt.axvline(len(y)-data[i].offset, color='r')
+            plt.axvline(data[i].offset, color='r', linestyle='dashed')
+            plt.axvline(len(y)-data[i].offset, color='r', linestyle='dashed')
             y, error = tolerant_mean(arr[1])
             x = np.linspace(0, y.shape[0]-1, y.shape[0])
             plt.plot(y, label='CPU')
             plt.fill_between(x, y-error, y+error, color='green', alpha=0.2, label='standard\ndeviation')
+            time = len(y)
+            time2 = time/(1000/100)
+            time2= np.round(time2/10)*10
+            x = np.linspace(0, time2, int(time2/10)+1, dtype=np.int16)
+            plt.xticks(10*x, x)
+            plt.xlabel('Time [s]')
+            plt.ylabel('Power draw [W]')
             plt.savefig(f'figures/data_{(i+1)*10}_watts.pdf', dpi=1000, format='pdf')
             if i == 0:
                 plt.legend()
@@ -286,12 +302,12 @@ def eval_data():
         plt.scatter(energy_diff, acc_diff, color="r", label="Keras Varying Data Load Results")
         for i in range(9):
             if i == 3:
-                plt.annotate(f'{i}, {i+1}', (energy_diff[i], acc_diff[i]), xytext=(4, 0), textcoords='offset pixels')
+                plt.annotate(f'{i+1}, {i+2}', (energy_diff[i], acc_diff[i]), xytext=(4, 0), textcoords='offset pixels')
                 continue
             if i == 4:
                 continue
             else:
-                plt.annotate(i, (energy_diff[i], acc_diff[i]), xytext=(4, 4), textcoords='offset pixels')
+                plt.annotate(i+1, (energy_diff[i], acc_diff[i]), xytext=(4, 4), textcoords='offset pixels')
         plt.xlabel("Increase in Energy Consumption [J]")
         plt.ylabel("Increase in Accuracy [percentage points]")
         # plt.title("Difference in energy consumption and accuracy\nfor each experiment to the prior experiment")
@@ -303,8 +319,9 @@ def eval_data():
         eff_3 = []
         eff_4 = []
 
+        acc_frac = [x/100 for x in acc]
         for i in range(10):
-            eff_1.append(100*(acc[i]**1)/energy_total[i])
+            eff_1.append(1000*(acc_frac[i]**1)/energy_total[i])
             eff_2.append(100*((acc[i]**2)/energy_total[i]))
             eff_3.append(100*(((acc[i]**3)/energy_total[i])))
             eff_4.append(100*(acc[i]/((100-acc[i]) * energy_total[i])))
@@ -312,55 +329,15 @@ def eval_data():
         x = np.linspace(6000, 60000, 10)
         plt.figure()
         plt.xticks(np.linspace(6000, 60000, 10))
+        plt.yticks(np.linspace(0.1, 0.3, 5))
         plt.xlabel('Amount of training samples')
-        plt.ylabel('Linear Efficiency [%/J]')
-        plt.scatter(x, eff_1, color='r')
-        plt.plot(x, eff_1, color='r')
+        plt.ylabel('Linear Efficiency [1/kJ]')
+        # plt.scatter(x, eff_1, color='r')
+        plt.plot(x, eff_1, marker='.')
         plt.savefig('figures/data_eff_lin.pdf', dpi=1000, format='pdf')
-        
-        plt.figure()
-        plt.scatter(x, eff_2, color='b')
-        plt.plot(x, eff_2, color='b')
-        plt.xlabel('Amount of training samples')
-        plt.ylabel('Efficiency')
-        plt.xticks(np.linspace(6000, 60000, 10))
-        ax2 = plt.twinx()
-        ax2.scatter(x, eff_3, color='y')
-        ax2.plot(x, eff_3, color='y')
-        plt.savefig('figures/data_eff_exp.pdf', dpi=1000, format='pdf')
-
-        eff_1 = (eff_1 - np.min(eff_1)) / (np.max(eff_1) - np.min(eff_1))
-        eff_2 = (eff_2 - np.min(eff_2)) / (np.max(eff_2) - np.min(eff_2))
-        eff_3 = (eff_3 - np.min(eff_3)) / (np.max(eff_3) - np.min(eff_3))
-        plt.figure()
-        plt.scatter(x, eff_2, color='b')
-        plt.plot(x, eff_2, color='b')
-        plt.xlabel('Amount of training samples')
-        plt.ylabel('Efficiency')
-        plt.xticks(np.linspace(6000, 60000, 10))
-        plt.scatter(x, eff_3, color='y')
-        plt.plot(x, eff_3, color='y')
-        plt.savefig('figures/data_eff_exp_norm.pdf', dpi=1000, format='pdf')
-
-        plt.figure()
-        plt.xlabel('Amount of training samples')
-        plt.ylabel('Efficiency')
-        plt.xticks(np.linspace(6000, 60000, 10))
-        plt.scatter(x, eff_4)
-        plt.plot(x, eff_4)
-        plt.savefig('figures/data_eff_alt.pdf', dpi=1000, format='pdf')
-
-        eff_4 = (eff_4 - np.min(eff_4)) / (np.max(eff_4) - np.min(eff_4))
-        plt.figure()
-        plt.xlabel('Amount of training samples')
-        plt.ylabel('Efficiency')
-        plt.xticks(np.linspace(6000, 60000, 10))
-        plt.scatter(x, eff_4)
-        plt.plot(x, eff_4)
-        plt.savefig('figures/data_eff_alt_norm.pdf', dpi=1000, format='pdf')
 
         eff_1 = []
-        acc_frac = [x/100 for x in acc]
+        # acc_frac = [x/100 for x in acc]
         for i in range(10):
             scale = (1000/(2**(i)))
             print(scale)
@@ -371,14 +348,14 @@ def eval_data():
         
         plt.figure()
         plt.xlabel('Amount of training samples')
-        plt.ylabel('Logarithmic Efficiency [%/J]')
+        plt.ylabel('Logarithmic Efficiency [1/J]')
         plt.xticks(np.linspace(6000, 60000, 10))
-        plt.plot(x, eff_1[0], color='b', label='x=1')
-        plt.scatter(x, eff_1[0], color='b')
-        plt.plot(x, eff_1[6], color='r', label='x=6')
-        plt.scatter(x, eff_1[6], color='r')
-        plt.plot(x, eff_1[9], color='y', label='x=10')
-        plt.scatter(x, eff_1[9], color='y')
+        plt.plot(x, eff_1[0], label='x=1', marker='.')
+        # plt.scatter(x, eff_1[0], color='b')
+        plt.plot(x, eff_1[6], label='x=6', marker='.')
+        # plt.scatter(x, eff_1[6], color='r')
+        plt.plot(x, eff_1[9], label='x=10', marker='.')
+        # plt.scatter(x, eff_1[9], color='y')
         plt.legend()
         plt.savefig('figures/data_eff_log.pdf', dpi=1000, format='pdf')
 
@@ -482,16 +459,16 @@ def eval_data():
         energy_total.append(data[i].energy_avg[0] + data[i].energy_avg[2])
         acc.append(100*data[i].acc_avg)
 
-    print_table(energy_total, energy_gpu, energy_cpu, acc)
+    # print_table(energy_total, energy_gpu, energy_cpu, acc)
     # plot_example_power(data)
-    # plot_power(data)
-    # plot_acc(energy_total, acc)
-    # plot_energy(energy_gpu, energy_cpu)
-    # plot_diff(energy_total, acc)
+    plot_power(data)
+    plot_acc(energy_total, acc)
+    plot_energy(energy_gpu, energy_cpu)
+    plot_diff(energy_total, acc)
     # test_eff(energy_total, acc)
-    # plot_eff(energy_total, acc)
+    plot_eff(energy_total, acc)
 
-# fig_data_prep()
+fig_data_prep()
 eval_compare()
-# eval_data()
+eval_data()
 plt.show()
