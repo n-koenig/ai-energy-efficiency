@@ -65,9 +65,7 @@ def fig_data_prep():
     data = ExperimentData('keras_10', 3, 20000, 100)
     data.watts = read_watts('MNIST_CNN/5/', data.name, data.reps)
     for x in data.watts:
-        x[:, 0] -= 16000
         x[:, 0] /= 1000
-        x[:, 2] -= 1000
         x[:, 2] /= 1000
     data.energy = energy_from_watts(data.watts, data.offset, data.interval)
     data.energy_avg = np.average(data.energy, axis=0)
@@ -75,9 +73,9 @@ def fig_data_prep():
     plt.figure()
     # plt.title('GPU Power Draw')
     for i in range(3):
-        plt.plot(data.watts[i][:, 0]/1000, label=f'Run {i+1}')
-    plt.axvline(x=200, linestyle='dashed', color='r')
-    plt.axvline(x=np.average([len(x) for x in data.watts])-200, linestyle='dashed', color='r')
+        plt.plot(data.watts[i][:, 0], label=f'Run {i+1}')
+    plt.axvline(x=200, linestyle='dashed', color='r', alpha=0.5)
+    plt.axvline(x=np.average([len(x) for x in data.watts])-200, linestyle='dashed', color='r', alpha=0.5)
     time = len(data.watts[2])
     time2 = time/(1000/100)
     time2= np.round(time2/10)*10
@@ -138,7 +136,7 @@ def eval_compare():
 
     fig, axs = plt.subplots(2, 2, sharex='col', sharey='all')
     # fig.suptitle('Average Power Draw')
-    l = list()
+    # l = list()
     
     times = []
     arr = []
@@ -151,11 +149,11 @@ def eval_compare():
         times.append(len(y))
         x = np.linspace(0, y.shape[0]-1, y.shape[0])
         index = [int(x) for x in f"{i:02b}"]
-        l.append(axs[index[0], index[1]].plot(y, label='average'))
+        axs[index[0], index[1]].axvline(keras.offset, color='r', linestyle='dashed', alpha=0.5)
+        axs[index[0], index[1]].axvline(len(y)-keras.offset, color='r', linestyle='dashed', alpha=0.5)
+        axs[index[0], index[1]].plot(y, label='average')
         axs[index[0], index[1]].fill_between(x, y-error, y+error, color='green', alpha=0.2, label='standard\ndeviation')
         axs[index[0], index[1]].set_title(titles[i])
-        axs[index[0], index[1]].axvline(keras.offset, color='r', linestyle='dashed')
-        axs[index[0], index[1]].axvline(len(y)-keras.offset, color='r', linestyle='dashed')
         if index[0]: 
             axs[index[0], index[1]].set_xlabel('Time [s]')
         if not index[1]: 
@@ -267,11 +265,11 @@ def eval_data():
             arr.append([x[:, 2] for x in data[i].watts])
             y, error = tolerant_mean(arr[0])
             x = np.linspace(0, y.shape[0]-1, y.shape[0])
+            plt.axvline(data[i].offset, color='r', linestyle='dashed', alpha=0.5)
+            plt.axvline(len(y)-data[i].offset, color='r', linestyle='dashed', alpha=0.5)
             plt.plot(y, label='GPU')
             plt.fill_between(x, y-error, y+error, color='green', alpha=0.2)
             # plt.title('Average GPU and CPU Power Draw')
-            plt.axvline(data[i].offset, color='r', linestyle='dashed')
-            plt.axvline(len(y)-data[i].offset, color='r', linestyle='dashed')
             y, error = tolerant_mean(arr[1])
             x = np.linspace(0, y.shape[0]-1, y.shape[0])
             plt.plot(y, label='CPU')
@@ -468,7 +466,7 @@ def eval_data():
     # test_eff(energy_total, acc)
     plot_eff(energy_total, acc)
 
-fig_data_prep()
+# fig_data_prep()
 eval_compare()
-eval_data()
+# eval_data()
 plt.show()
